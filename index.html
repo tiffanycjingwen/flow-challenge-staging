@@ -102,8 +102,7 @@
   .class-proof-panel { background: var(--surface); border: 1px solid var(--green-border); border-radius: var(--radius-sm); padding: 10px 12px; margin-top: 8px; display: none; }
   .class-proof-panel.open { display: block; }
   .proof-panel-label { font-size: 11px; font-weight: 500; color: var(--green-text); margin-bottom: 8px; }
-  .proof-input-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 0; }
-  .proof-actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .proof-input-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
   .proof-input { flex: 1; padding: 7px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); outline: none; margin: 0; }
   .proof-input:focus { border-color: var(--green-border); }
   .proof-input[disabled] { opacity: 0.6; cursor: default; }
@@ -111,7 +110,7 @@
   .drive-btn:hover:not([disabled]) { background: var(--surface2); }
   .drive-btn.has-proof { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
   .drive-btn[disabled] { opacity: 0.6; cursor: default; }
-  .unmark-btn { font-size: 11px; font-family: 'DM Sans', sans-serif; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(226,75,74,0.3); background: var(--red-bg); color: var(--red-text); cursor: pointer; white-space: nowrap; margin-top: 4px; align-self: flex-end; }
+  .unmark-btn { font-size: 11px; font-family: 'DM Sans', sans-serif; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(226,75,74,0.3); background: var(--red-bg); color: var(--red-text); cursor: pointer; white-space: nowrap; }
 
   .bonus-list { display: flex; flex-direction: column; gap: 8px; }
   .bonus-card { background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); overflow: hidden; }
@@ -123,10 +122,9 @@
   .bonus-pts-label { font-size: 11px; color: var(--text3); margin-top: 3px; }
   .bonus-card.done .bonus-pts-label { color: var(--green); }
 
-  .bubbles-wrap { padding: 4px 14px 10px; }
-  .bubble-group { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
-  .bubble { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border2); cursor: pointer; flex-shrink: 0; flex-grow: 0; transition: background 0.12s, border-color 0.12s; }
-  .bubble.sized { width: auto; flex: 1; max-width: 36px; aspect-ratio: 1; }
+  .bubbles-wrap { padding: 4px 14px 12px; }
+  .bubble-group { display: flex; align-items: center; gap: 5px; margin-bottom: 6px; flex-wrap: wrap; }
+  .bubble { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border2); cursor: pointer; flex-shrink: 0; transition: background 0.12s, border-color 0.12s; }
   .bubble:hover:not(.readonly) { border-color: var(--green); }
   .bubble.filled { background: var(--green); border-color: var(--green); }
   .bubble.filled.completer { background: var(--green-dark); border-color: var(--green-dark); }
@@ -298,14 +296,14 @@
 
   <div class="credit">
     Made by <strong>Tiffany Wen</strong><br>
-    <span style="font-size:11px;">because Flow was doing manual insanity and someone had to fix it.</span>
+    <span style="font-size:11px;">because Flow was doing manual insanity and someone had to fix it</span>
   </div>
 </div>
 
 <div class="saving-toast" id="toast"></div>
 
 <script>
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw8JhQJ9EAUkcqIYdcOmsDb2ieObc9l5sL3eqmqt-usdvhb8vfla6SE1zB-nWsvH-Fi/exec';
+var SCRIPT_URL = 'PASTE_STAGING_SCRIPT_URL_HERE';
 var DRIVE_URL = 'https://drive.google.com/drive/folders/1WaEOliYqb-Ih5MMBVH_pcdyhX5o4t4E0';
 var CURRENT_KEY = 'flow_current_id_v4';
 var UNLOCKED_KEY = 'flow_unlocked_v4';
@@ -706,11 +704,8 @@ function renderClassGrid() {
           scheduleSave();
         });
       }
-      inputRow.appendChild(input);
+      inputRow.appendChild(input); inputRow.appendChild(driveBtn);
       panel.appendChild(inputRow);
-      var proofActions = document.createElement('div');
-      proofActions.className = 'proof-actions';
-      proofActions.appendChild(driveBtn);
       if (editable2) {
         var unmarkBtn = document.createElement('button');
         unmarkBtn.className = 'unmark-btn';
@@ -722,9 +717,8 @@ function renderClassGrid() {
           expandedClass = idx > 0 ? idx - 1 : null;
           renderTracker(); scheduleSave();
         };
-        proofActions.appendChild(unmarkBtn);
+        panel.appendChild(unmarkBtn);
       }
-      panel.appendChild(proofActions);
       container.appendChild(panel);
     })(expandedClass);
   }
@@ -781,7 +775,7 @@ function renderBonusGroup(gridId, list) {
           var isCompleter = groupSize > 1 && ((idx + 1) % groupSize === 0);
 
           var dot = document.createElement('div');
-          dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter ? ' completer' : '') + (!editable ? ' readonly' : '') + (b.max > 5 ? ' sized' : '');
+          dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter ? ' completer' : '') + (!editable ? ' readonly' : '');
 
           if (editable) {
             dot.onclick = function(e) {
@@ -872,11 +866,9 @@ function renderBonusGroup(gridId, list) {
               scheduleSave();
             });
           }
-          inputRow.appendChild(input);
+          inputRow.appendChild(input); inputRow.appendChild(driveBtn);
           panel.appendChild(inputRow);
-          var proofActions = document.createElement('div');
-          proofActions.className = 'proof-actions';
-          proofActions.appendChild(driveBtn);
+
           if (editable2) {
             var unmarkBtn = document.createElement('button');
             unmarkBtn.className = 'unmark-btn';
@@ -890,13 +882,13 @@ function renderBonusGroup(gridId, list) {
               renderBonusGroup(gridId, list);
               renderTracker(); scheduleSave();
             };
-            proofActions.appendChild(unmarkBtn);
+            panel.appendChild(unmarkBtn);
           }
-          panel.appendChild(proofActions);
           card.appendChild(panel);
         })(expDot);
       }
     }
+
     grid.appendChild(card);
   });
 }
@@ -1085,11 +1077,6 @@ function renderCustomChallenges() {
         input.type = 'text'; input.className = 'proof-input';
         input.placeholder = b.notePrompt || 'Add a proof note...';
         input.value = existingNote; input.disabled = !editable2;
-        var driveBtn = document.createElement('button');
-        driveBtn.className = 'drive-btn' + (existingNote ? ' has-proof' : '');
-        driveBtn.textContent = existingNote ? 'Proof added' : 'Upload proof';
-        driveBtn.disabled = !editable2;
-        driveBtn.onclick = function() { if (editable2) openDrive(); };
         if (editable2) {
           input.addEventListener('change', function() {
             if (!p.notes) p.notes = {};
@@ -1101,12 +1088,35 @@ function renderCustomChallenges() {
         }
         inputRow.appendChild(input);
         panel.appendChild(inputRow);
+        var driveBtn = document.createElement('button');
+        driveBtn.className = 'drive-btn' + (existingNote ? ' has-proof' : '');
+        driveBtn.textContent = existingNote ? 'Proof added' : 'Upload proof';
+        driveBtn.disabled = !editable2;
+        driveBtn.onclick = function() { if (editable2) openDrive(); };
         var proofActions = document.createElement('div');
         proofActions.className = 'proof-actions';
         proofActions.appendChild(driveBtn);
         if (editable2) {
           var unmarkBtn = document.createElement('button');
-
+          unmarkBtn.className = 'unmark-btn';
+          unmarkBtn.textContent = 'Unmark this';
+          unmarkBtn.onclick = function() {
+            if (!confirm('Unmark this completion?')) return;
+            if (!p.customBonuses) p.customBonuses = {};
+            p.customBonuses[b.id] = (groupNum - 1) * gs;
+            if (p.notes) delete p.notes[noteKey];
+            delete expandedBonuses['c_'+b.id];
+            renderCustomChallenges(); renderTracker(); scheduleSave();
+          };
+          proofActions.appendChild(unmarkBtn);
+        }
+        panel.appendChild(proofActions);
+        card.appendChild(panel);
+      })(expDot);
+    }
+    grid.appendChild(card);
+  });
+}
 function scheduleSave() {
   clearTimeout(saveTimer);
   setStatus('status', 'loading', 'Saving...');
