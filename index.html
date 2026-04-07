@@ -104,14 +104,14 @@
   .proof-panel-label { font-size: 11px; font-weight: 500; color: var(--green-text); margin-bottom: 8px; }
   .proof-input-row { display: flex; flex-direction: column; gap: 0; margin-bottom: 0; }
   .proof-actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
-  .proof-input { flex: 1; padding: 7px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); outline: none; margin: 0; }
+  .proof-input { width: 100%; padding: 7px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); outline: none; margin: 0; }
   .proof-input:focus { border-color: var(--green-border); }
   .proof-input[disabled] { opacity: 0.6; cursor: default; }
-  .drive-btn { font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 7px 11px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; white-space: nowrap; flex-shrink: 0; flex: 1; transition: background 0.12s; }
+  .drive-btn { font-size: 11.5px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; white-space: nowrap; flex: 1; text-align: center; transition: background 0.12s; }
   .drive-btn:hover:not([disabled]) { background: var(--surface2); }
   .drive-btn.has-proof { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
   .drive-btn[disabled] { opacity: 0.6; cursor: default; }
-  .unmark-btn { font-size: 11px; font-family: 'DM Sans', sans-serif; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(226,75,74,0.3); background: var(--red-bg); color: var(--red-text); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .unmark-btn { font-size: 11.5px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(226,75,74,0.3); background: var(--red-bg); color: var(--red-text); cursor: pointer; white-space: nowrap; flex: 1; text-align: center; }
 
   .bonus-list { display: flex; flex-direction: column; gap: 8px; }
   .bonus-card { background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); overflow: hidden; }
@@ -123,14 +123,14 @@
   .bonus-pts-label { font-size: 11px; color: var(--text3); margin-top: 3px; }
   .bonus-card.done .bonus-pts-label { color: var(--green); }
 
-  .bubbles-wrap { padding: 4px 14px 12px; }
-  .bubble-group { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; flex-wrap: wrap; }
-  .bubble { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border2); cursor: pointer; flex-shrink: 0; transition: background 0.12s, border-color 0.12s; }
-  .bubble:hover:not(.readonly) { border-color: var(--green); }
+    .bubbles-wrap { padding: 6px 12px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .bubble-pill { display: flex; align-items: center; gap: 5px; background: rgba(44,36,22,0.05); border-radius: 999px; padding: 5px 10px; border: 1px solid var(--border); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+  .bubble-pill:hover:not(.readonly) { border-color: var(--green-border); }
+  .bubble-pill.done { background: var(--green-bg); border-color: var(--green-border); }
+  .bubble-pill.readonly { cursor: default; }
+  .bubble { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border2); flex-shrink: 0; transition: background 0.12s, border-color 0.12s; background: transparent; pointer-events: none; }
   .bubble.filled { background: var(--green); border-color: var(--green); }
   .bubble.filled.completer { background: var(--green-dark); border-color: var(--green-dark); }
-  .bubble.readonly { cursor: default; opacity: 0.7; }
-  .bubble-group-sep { display: none; }
   .bubble-note-input { font-size: 11px; padding: 3px 7px; height: 26px; flex: 1; min-width: 80px; margin: 0; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; }
   .bubble-note-input:focus { border-color: var(--green-border); }
 
@@ -304,7 +304,7 @@
 <div class="saving-toast" id="toast"></div>
 
 <script>
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxSnQI7U_RYacLnalh213ZlVuPwNxSDfXHNVeIrGIl3RNnqkl31cimRX69l11Ebi1Is/exec';
+var SCRIPT_URL = 'PASTE_STAGING_SCRIPT_URL_HERE';
 var DRIVE_URL = 'https://drive.google.com/drive/folders/1WaEOliYqb-Ih5MMBVH_pcdyhX5o4t4E0';
 var CURRENT_KEY = 'flow_current_id_v4';
 var UNLOCKED_KEY = 'flow_unlocked_v4';
@@ -763,42 +763,44 @@ function renderBonusGroup(gridId, list) {
     bubblesWrap.className = 'bubbles-wrap';
 
     var numGroups = Math.ceil(totalBubbles / groupSize);
-    var singleRow = groupSize === 1;
-    var singleRowWrap = null;
-    if (singleRow) {
-      singleRowWrap = document.createElement('div');
-      singleRowWrap.className = 'bubble-group';
-      bubblesWrap.appendChild(singleRowWrap);
-    }
     for (var g = 0; g < numGroups; g++) {
-      var groupWrap = singleRow ? singleRowWrap : document.createElement('div');
-      if (!singleRow) groupWrap.className = 'bubble-group';
+      var pillDone = (g + 1) * groupSize <= filled;
+      var pill = document.createElement('div');
+      pill.className = 'bubble-pill' + (pillDone ? ' done' : '') + (!editable ? ' readonly' : '');
+
+      (function(groupIdx) {
+        pill.onclick = function(e) {
+          e.stopPropagation();
+          if (!editable) return;
+          var groupStart = groupIdx * groupSize;
+          var groupEnd = groupStart + groupSize - 1;
+          var groupFilled = Math.min(filled, groupEnd + 1) - groupStart;
+          if (!p.bonuses) p.bonuses = {};
+          if (groupFilled < groupSize) {
+            p.bonuses[b.id] = groupStart + groupFilled + 1;
+            if (groupStart + groupFilled + 1 === (groupIdx + 1) * groupSize) {
+              expandedBonuses[b.id] = (groupIdx + 1) * groupSize - 1;
+            }
+          } else {
+            expandedBonuses[b.id] = expandedBonuses[b.id] === groupEnd ? -1 : groupEnd;
+          }
+          renderBonusGroup(gridId, list);
+          renderTracker();
+          if (groupFilled < groupSize) scheduleSave();
+        };
+      })(g);
+
       for (var bi = 0; bi < groupSize; bi++) {
         var bubbleIdx = g * groupSize + bi;
         if (bubbleIdx >= totalBubbles) break;
-        (function(idx) {
-          var isFilled = idx < filled;
-          var isCompleter = groupSize > 1 ? ((idx + 1) % groupSize === 0) : true;
-          var dot = document.createElement('div');
-          dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter && groupSize > 1 ? ' completer' : '') + (!editable ? ' readonly' : '') ;
-          if (editable) {
-            dot.onclick = function(e) {
-              e.stopPropagation();
-              if (!p.bonuses) p.bonuses = {};
-              if (!isFilled) {
-                p.bonuses[b.id] = idx + 1;
-                expandedBonuses[b.id] = idx;
-                renderBonusGroup(gridId, list);
-                renderTracker();
-                scheduleSave();
-              } else {
-                expandedBonuses[b.id] = expandedBonuses[b.id] === idx ? -1 : idx;
-                renderBonusGroup(gridId, list);
-              }
-            };
-          }
-          groupWrap.appendChild(dot);
-          if (b.perBubbleNote && isFilled) {
+        var isFilled = bubbleIdx < filled;
+        var isCompleter = bi === groupSize - 1 && groupSize > 1;
+        var dot = document.createElement('div');
+        dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter ? ' completer' : '');
+        pill.appendChild(dot);
+
+        if (b.perBubbleNote && isFilled) {
+          (function(idx) {
             var noteKey = b.id + '_bubble_' + idx;
             var bNote = (p.notes && p.notes[noteKey]) || '';
             var bInput = document.createElement('input');
@@ -807,6 +809,7 @@ function renderBonusGroup(gridId, list) {
             bInput.placeholder = b.notePrompt || 'Note...';
             bInput.value = bNote;
             bInput.disabled = !editable;
+            bInput.onclick = function(e) { e.stopPropagation(); };
             if (editable) {
               bInput.addEventListener('change', function() {
                 if (!p.notes) p.notes = {};
@@ -814,18 +817,11 @@ function renderBonusGroup(gridId, list) {
                 scheduleSave();
               });
             }
-            groupWrap.appendChild(bInput);
-          }
-        })(bubbleIdx);
-      }
-      if (!singleRow) {
-        if (g < numGroups - 1) {
-          var sep = document.createElement('div');
-          sep.className = 'bubble-group-sep';
-          groupWrap.appendChild(sep);
+            pill.appendChild(bInput);
+          })(bubbleIdx);
         }
-        bubblesWrap.appendChild(groupWrap);
       }
+      bubblesWrap.appendChild(pill);
     }
     card.appendChild(bubblesWrap);
 
@@ -919,15 +915,18 @@ function renderEarlyBonus() {
 
   var bubblesWrap = document.createElement('div');
   bubblesWrap.className = 'bubbles-wrap';
-  var dot = document.createElement('div');
-  dot.className = 'bubble' + (done ? ' filled' : '') + (!editable ? ' readonly' : '');
+  var pill = document.createElement('div');
+  pill.className = 'bubble-pill' + (done ? ' done' : '') + (!editable ? ' readonly' : '');
   if (editable) {
-    dot.onclick = function() {
+    pill.onclick = function() {
       if (!done) { p.earlySignup = 1; expandedBonuses['early'] = 0; renderEarlyBonus(); renderTracker(); scheduleSave(); }
       else { expandedBonuses['early'] = expandedBonuses['early'] === 0 ? -1 : 0; renderEarlyBonus(); }
     };
   }
-  bubblesWrap.appendChild(dot);
+  var dot = document.createElement('div');
+  dot.className = 'bubble' + (done ? ' filled' : '');
+  pill.appendChild(dot);
+  bubblesWrap.appendChild(pill);
   card.appendChild(head);
   card.appendChild(bubblesWrap);
 
@@ -1022,39 +1021,39 @@ function renderCustomChallenges() {
     bubblesWrap.className = 'bubbles-wrap';
     var numGroups = Math.ceil(totalBubbles / gs);
     for (var g = 0; g < numGroups; g++) {
-      var groupWrap = document.createElement('div');
-      groupWrap.className = 'bubble-group';
+      var pillDone = (g + 1) * gs <= filled;
+      var pill = document.createElement('div');
+      pill.className = 'bubble-pill' + (pillDone ? ' done' : '') + (!editable ? ' readonly' : '');
+      (function(groupIdx) {
+        pill.onclick = function(e) {
+          e.stopPropagation();
+          if (!editable) return;
+          var groupStart = groupIdx * gs;
+          var groupFilled = Math.min(filled, groupStart + gs) - groupStart;
+          if (!p.customBonuses) p.customBonuses = {};
+          if (groupFilled < gs) {
+            p.customBonuses[b.id] = groupStart + groupFilled + 1;
+            if (groupStart + groupFilled + 1 === (groupIdx + 1) * gs) {
+              expandedBonuses['c_'+b.id] = (groupIdx + 1) * gs - 1;
+            }
+          } else {
+            var groupEnd = (groupIdx + 1) * gs - 1;
+            expandedBonuses['c_'+b.id] = expandedBonuses['c_'+b.id] === groupEnd ? -1 : groupEnd;
+          }
+          renderCustomChallenges(); renderTracker();
+          if (groupFilled < gs) scheduleSave();
+        };
+      })(g);
       for (var bi = 0; bi < gs; bi++) {
         var bubbleIdx = g * gs + bi;
         if (bubbleIdx >= totalBubbles) break;
-        (function(idx) {
-          var isFilled = idx < filled;
-          var isCompleter = gs > 1 ? ((idx + 1) % gs === 0) : true;
-          var dot = document.createElement('div');
-          dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter ? ' completer' : '') + (!editable ? ' readonly' : '') ;
-          if (editable) {
-            dot.onclick = function(e) {
-              e.stopPropagation();
-              if (!p.customBonuses) p.customBonuses = {};
-              if (!isFilled) {
-                p.customBonuses[b.id] = idx + 1;
-                if (isCompleter) expandedBonuses['c_'+b.id] = idx;
-                renderCustomChallenges(); renderTracker(); scheduleSave();
-              } else if (isCompleter) {
-                expandedBonuses['c_'+b.id] = expandedBonuses['c_'+b.id] === idx ? -1 : idx;
-                renderCustomChallenges();
-              }
-            };
-          }
-          groupWrap.appendChild(dot);
-        })(bubbleIdx);
+        var isFilled2 = bubbleIdx < filled;
+        var isCompleter2 = bi === gs - 1 && gs > 1;
+        var dot2 = document.createElement('div');
+        dot2.className = 'bubble' + (isFilled2 ? ' filled' : '') + (isFilled2 && isCompleter2 ? ' completer' : '');
+        pill.appendChild(dot2);
       }
-      if (gs > 1 && g < numGroups - 1) {
-        var sep = document.createElement('div');
-        sep.className = 'bubble-group-sep';
-        groupWrap.appendChild(sep);
-      }
-      bubblesWrap.appendChild(groupWrap);
+      bubblesWrap.appendChild(pill);
     }
     card.appendChild(bubblesWrap);
 
