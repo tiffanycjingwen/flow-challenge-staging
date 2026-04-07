@@ -102,16 +102,16 @@
   .class-proof-panel { background: var(--surface); border: 1px solid var(--green-border); border-radius: var(--radius-sm); padding: 10px 12px; margin-top: 8px; display: none; }
   .class-proof-panel.open { display: block; }
   .proof-panel-label { font-size: 11px; font-weight: 500; color: var(--green-text); margin-bottom: 8px; }
-  .proof-input-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 0; }
+  .proof-input-row { display: flex; flex-direction: column; gap: 0; margin-bottom: 0; }
   .proof-actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
   .proof-input { flex: 1; padding: 7px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); outline: none; margin: 0; }
   .proof-input:focus { border-color: var(--green-border); }
   .proof-input[disabled] { opacity: 0.6; cursor: default; }
-  .drive-btn { font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 7px 11px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background 0.12s; }
+  .drive-btn { font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 7px 11px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; white-space: nowrap; flex-shrink: 0; flex: 1; transition: background 0.12s; }
   .drive-btn:hover:not([disabled]) { background: var(--surface2); }
   .drive-btn.has-proof { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
   .drive-btn[disabled] { opacity: 0.6; cursor: default; }
-  .unmark-btn { font-size: 11px; font-family: 'DM Sans', sans-serif; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(226,75,74,0.3); background: var(--red-bg); color: var(--red-text); cursor: pointer; white-space: nowrap; margin-left: auto; }
+  .unmark-btn { font-size: 11px; font-family: 'DM Sans', sans-serif; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(226,75,74,0.3); background: var(--red-bg); color: var(--red-text); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 
   .bonus-list { display: flex; flex-direction: column; gap: 8px; }
   .bonus-card { background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); overflow: hidden; }
@@ -123,15 +123,14 @@
   .bonus-pts-label { font-size: 11px; color: var(--text3); margin-top: 3px; }
   .bonus-card.done .bonus-pts-label { color: var(--green); }
 
-  .bubbles-wrap { padding: 4px 14px 10px; }
-  .bubble-group { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
-  .bubble { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border2); cursor: pointer; flex-shrink: 0; transition: background 0.12s, border-color 0.12s; }
-  .bubble.sized { width: auto; flex: 1; max-width: 36px; aspect-ratio: 1; }
+  .bubbles-wrap { padding: 4px 14px 12px; }
+  .bubble-group { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; flex-wrap: wrap; }
+  .bubble { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border2); cursor: pointer; flex-shrink: 0; transition: background 0.12s, border-color 0.12s; }
   .bubble:hover:not(.readonly) { border-color: var(--green); }
   .bubble.filled { background: var(--green); border-color: var(--green); }
   .bubble.filled.completer { background: var(--green-dark); border-color: var(--green-dark); }
   .bubble.readonly { cursor: default; opacity: 0.7; }
-  .bubble-group-sep { width: 1px; height: 16px; background: var(--border2); flex-shrink: 0; margin: 0 2px; }
+  .bubble-group-sep { display: none; }
   .bubble-note-input { font-size: 11px; padding: 3px 7px; height: 26px; flex: 1; min-width: 80px; margin: 0; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; }
   .bubble-note-input:focus { border-color: var(--green-border); }
 
@@ -764,42 +763,41 @@ function renderBonusGroup(gridId, list) {
     bubblesWrap.className = 'bubbles-wrap';
 
     var numGroups = Math.ceil(totalBubbles / groupSize);
+    var singleRow = groupSize === 1;
+    var singleRowWrap = null;
+    if (singleRow) {
+      singleRowWrap = document.createElement('div');
+      singleRowWrap.className = 'bubble-group';
+      bubblesWrap.appendChild(singleRowWrap);
+    }
     for (var g = 0; g < numGroups; g++) {
-      var groupWrap = document.createElement('div');
-      groupWrap.className = 'bubble-group';
-
+      var groupWrap = singleRow ? singleRowWrap : document.createElement('div');
+      if (!singleRow) groupWrap.className = 'bubble-group';
       for (var bi = 0; bi < groupSize; bi++) {
         var bubbleIdx = g * groupSize + bi;
         if (bubbleIdx >= totalBubbles) break;
-
         (function(idx) {
           var isFilled = idx < filled;
-          var isCompleter = groupSize > 1 && ((idx + 1) % groupSize === 0);
-
+          var isCompleter = groupSize > 1 ? ((idx + 1) % groupSize === 0) : true;
           var dot = document.createElement('div');
-          dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter ? ' completer' : '') + (!editable ? ' readonly' : '');
-
+          dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter && groupSize > 1 ? ' completer' : '') + (!editable ? ' readonly' : '') ;
           if (editable) {
             dot.onclick = function(e) {
               e.stopPropagation();
               if (!p.bonuses) p.bonuses = {};
               if (!isFilled) {
                 p.bonuses[b.id] = idx + 1;
-                if (isCompleter || groupSize === 1) expandedBonuses[b.id] = idx;
+                expandedBonuses[b.id] = idx;
                 renderBonusGroup(gridId, list);
                 renderTracker();
                 scheduleSave();
               } else {
-                if (isCompleter || groupSize === 1) {
-                  expandedBonuses[b.id] = expandedBonuses[b.id] === idx ? -1 : idx;
-                  renderBonusGroup(gridId, list);
-                }
+                expandedBonuses[b.id] = expandedBonuses[b.id] === idx ? -1 : idx;
+                renderBonusGroup(gridId, list);
               }
             };
           }
-
           groupWrap.appendChild(dot);
-
           if (b.perBubbleNote && isFilled) {
             var noteKey = b.id + '_bubble_' + idx;
             var bNote = (p.notes && p.notes[noteKey]) || '';
@@ -820,14 +818,14 @@ function renderBonusGroup(gridId, list) {
           }
         })(bubbleIdx);
       }
-
-      if (groupSize > 1 && g < numGroups - 1) {
-        var sep = document.createElement('div');
-        sep.className = 'bubble-group-sep';
-        groupWrap.appendChild(sep);
+      if (!singleRow) {
+        if (g < numGroups - 1) {
+          var sep = document.createElement('div');
+          sep.className = 'bubble-group-sep';
+          groupWrap.appendChild(sep);
+        }
+        bubblesWrap.appendChild(groupWrap);
       }
-
-      bubblesWrap.appendChild(groupWrap);
     }
     card.appendChild(bubblesWrap);
 
@@ -1033,7 +1031,7 @@ function renderCustomChallenges() {
           var isFilled = idx < filled;
           var isCompleter = gs > 1 ? ((idx + 1) % gs === 0) : true;
           var dot = document.createElement('div');
-          dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter ? ' completer' : '') + (!editable ? ' readonly' : '') + (totalBubbles > 5 ? ' sized' : '');
+          dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter ? ' completer' : '') + (!editable ? ' readonly' : '') ;
           if (editable) {
             dot.onclick = function(e) {
               e.stopPropagation();
