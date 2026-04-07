@@ -109,9 +109,9 @@
   .proof-input[disabled] { opacity: 0.6; cursor: default; }
   .drive-btn { font-size: 11.5px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; white-space: nowrap; flex: 1; text-align: center; transition: background 0.12s; }
   .drive-btn:hover:not([disabled]) { background: var(--surface2); }
-  .drive-btn.has-proof { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+
   .drive-btn[disabled] { opacity: 0.6; cursor: default; }
-  .unmark-btn { font-size: 11.5px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(226,75,74,0.3); background: var(--red-bg); color: var(--red-text); cursor: pointer; white-space: nowrap; flex: 1; text-align: center; }
+  .unmark-btn { font-size: 11.5px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; white-space: nowrap; flex: 1; text-align: center; }
 
   .bonus-list { display: flex; flex-direction: column; gap: 8px; }
   .bonus-card { background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); overflow: hidden; }
@@ -692,16 +692,16 @@ function renderClassGrid() {
       input.placeholder = editable2 ? 'Add a note (e.g. reformer class, 7 Apr)' : 'No note added';
       input.value = note; input.disabled = !editable2;
       var driveBtn = document.createElement('button');
-      driveBtn.className = 'drive-btn' + (note ? ' has-proof' : '');
-      driveBtn.textContent = note ? 'Proof added' : 'Upload proof';
+      driveBtn.className = 'drive-btn';
+      driveBtn.textContent = 'Upload proof';
       driveBtn.disabled = !editable2;
       driveBtn.onclick = function() { if (editable2) openDrive(); };
       if (editable2) {
         input.addEventListener('change', function() {
           if (!p.classNotes) p.classNotes = {};
           p.classNotes[idx] = input.value;
-          driveBtn.className = 'drive-btn' + (input.value ? ' has-proof' : '');
-          driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
+          
+          
           scheduleSave();
         });
       }
@@ -849,16 +849,16 @@ function renderBonusGroup(gridId, list) {
           input.placeholder = b.notePrompt || 'Add a proof note...';
           input.value = existingNote; input.disabled = !editable2;
           var driveBtn = document.createElement('button');
-          driveBtn.className = 'drive-btn' + (existingNote ? ' has-proof' : '');
-          driveBtn.textContent = existingNote ? 'Proof added' : 'Upload proof';
+          driveBtn.className = 'drive-btn';
+          driveBtn.textContent = 'Upload proof';
           driveBtn.disabled = !editable2;
           driveBtn.onclick = function() { if (editable2) openDrive(); };
           if (editable2) {
             input.addEventListener('change', function() {
               if (!p.notes) p.notes = {};
               p.notes[noteKey] = input.value;
-              driveBtn.className = 'drive-btn' + (input.value ? ' has-proof' : '');
-              driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
+              
+              
               scheduleSave();
             });
           }
@@ -947,16 +947,16 @@ function renderEarlyBonus() {
       input.addEventListener('change', function() {
         if (!p.notes) p.notes = {};
         p.notes['early'] = input.value;
-        driveBtn.className = 'drive-btn' + (input.value ? ' has-proof' : '');
-        driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
+        
+        
         scheduleSave();
       });
     }
     inputRow.appendChild(input);
     panel.appendChild(inputRow);
     var driveBtn = document.createElement('button');
-    driveBtn.className = 'drive-btn' + (note ? ' has-proof' : '');
-    driveBtn.textContent = note ? 'Proof added' : 'Upload proof';
+    driveBtn.className = 'drive-btn';
+    driveBtn.textContent = 'Upload proof';
     driveBtn.disabled = !editable;
     driveBtn.onclick = function() { if (editable) openDrive(); };
     var proofActions = document.createElement('div');
@@ -1080,16 +1080,16 @@ function renderCustomChallenges() {
           input.addEventListener('change', function() {
             if (!p.notes) p.notes = {};
             p.notes[noteKey] = input.value;
-            driveBtn.className = 'drive-btn' + (input.value ? ' has-proof' : '');
-            driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
+            
+            
             scheduleSave();
           });
         }
         inputRow.appendChild(input);
         panel.appendChild(inputRow);
         var driveBtn = document.createElement('button');
-        driveBtn.className = 'drive-btn' + (existingNote ? ' has-proof' : '');
-        driveBtn.textContent = existingNote ? 'Proof added' : 'Upload proof';
+        driveBtn.className = 'drive-btn';
+        driveBtn.textContent = 'Upload proof';
         driveBtn.disabled = !editable2;
         driveBtn.onclick = function() { if (editable2) openDrive(); };
         var proofActions = document.createElement('div');
