@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Flow Challenge Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #F5F0E8;
+    --surface: #FDFAF5;
+    --surface2: #EDE8DF;
+    --text: #2C2416;
+    --text2: #7A6E5F;
+    --text3: #A89E8E;
+    --border: rgba(44,36,22,0.12);
+    --border2: rgba(44,36,22,0.22);
+    --green: #1D9E75;
+    --green-dark: #085041;
+    --green-bg: #E1F5EE;
+    --green-text: #085041;
+    --green-border: #5DCAA5;
+    --gold: #BA7517;
+    --gold-bg: #FAEEDA;
+    --gold-text: #633806;
+    --red: #E24B4A;
+    --red-bg: #FCEBEB;
+    --red-text: #791F1F;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .app { max-width: 480px; margin: 0 auto; padding: 0 0 80px; }
+
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px 20px 0; position: sticky; top: 0; z-index: 10; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .logo { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text); }
+  .logo span { color: var(--gold); }
+  .tab-bar { display: flex; }
+  .tab-btn { flex: 1; padding: 10px 0; font-size: 13px; font-weight: 500; border: none; background: transparent; cursor: pointer; color: var(--text2); border-bottom: 2px solid transparent; font-family: 'DM Sans', sans-serif; transition: color 0.15s, border-color 0.15s; }
+  .tab-btn.active { color: var(--text); border-bottom-color: var(--gold); }
+
+  .screen { display: none; padding: 20px; }
+  .screen.active { display: block; }
+
+  .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 24px; }
+  .card-title { font-family: 'DM Serif Display', serif; font-size: 26px; margin-bottom: 6px; }
+  .card-sub { font-size: 14px; color: var(--text2); margin-bottom: 24px; line-height: 1.6; }
+  .field-label { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  input[type=text], select { width: 100%; padding: 10px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); outline: none; margin-bottom: 16px; transition: border-color 0.15s; }
+  input[type=text]:focus, select:focus { border-color: var(--gold); }
+
+  .pin-row { display: flex; gap: 10px; margin-bottom: 16px; justify-content: center; }
+  .pin-digit { width: 52px; height: 56px; font-size: 22px; font-weight: 500; text-align: center; font-family: 'DM Sans', sans-serif; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); outline: none; margin: 0; transition: border-color 0.15s; }
+  .pin-digit:focus { border-color: var(--gold); }
+  .pin-hint { font-size: 12px; color: var(--text3); text-align: center; margin-bottom: 16px; }
+
+  .btn { width: 100%; padding: 12px; font-size: 14px; font-weight: 500; font-family: 'DM Sans', sans-serif; border-radius: var(--radius-sm); border: none; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--text); color: var(--bg); }
+  .btn-secondary { background: var(--surface2); color: var(--text); margin-top: 8px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .av-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 20px; }
+  .av-opt { aspect-ratio: 1; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: border-color 0.15s, transform 0.1s; }
+  .av-opt:hover { transform: scale(1.1); }
+  .av-opt.selected { border-color: var(--text); }
+
+  .profile-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 10px 12px; }
+  .profile-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+  .profile-bar select { margin: 0; flex: 1; padding: 0; border: none; background: transparent; font-size: 14px; font-weight: 500; }
+  .profile-bar select:focus { outline: none; }
+
+  .viewonly-banner { background: var(--gold-bg); border: 1px solid rgba(186,117,23,0.3); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .viewonly-text { font-size: 13px; color: var(--gold-text); }
+  .viewonly-sub { font-size: 11px; color: var(--gold); margin-top: 2px; }
+  .unlock-btn { font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid rgba(186,117,23,0.4); background: var(--surface); color: var(--gold-text); cursor: pointer; white-space: nowrap; }
+
+  .pts-banner { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+  .pts-card { background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 12px; text-align: center; }
+  .pts-label { font-size: 11px; color: var(--text3); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .pts-num { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--text); line-height: 1; }
+  .pts-sub { font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+  .lucky-bar { background: var(--gold-bg); border: 1px solid rgba(186,117,23,0.3); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .lucky-label { font-size: 13px; color: var(--gold-text); font-weight: 500; }
+  .lucky-sub { font-size: 11px; color: var(--gold); margin-top: 2px; }
+  .lucky-num { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--gold-text); }
+
+  .section-title { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin: 20px 0 8px; }
+
+  .classes-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .class-dot { aspect-ratio: 1; border-radius: 50%; border: 1.5px solid var(--border2); cursor: pointer; background: transparent; transition: background 0.12s, border-color 0.12s, transform 0.1s; }
+  .class-dot:hover:not(.readonly) { transform: scale(1.12); border-color: var(--green); }
+  .class-dot.done { background: var(--green); border-color: var(--green); }
+  .class-dot.expanded { box-shadow: 0 0 0 2px var(--green); }
+  .class-dot.readonly { cursor: default; opacity: 0.7; }
+
+  .class-proof-panel { background: var(--surface); border: 1px solid var(--green-border); border-radius: var(--radius-sm); padding: 10px 12px; margin-top: 8px; display: none; }
+  .class-proof-panel.open { display: block; }
+  .proof-panel-label { font-size: 11px; font-weight: 500; color: var(--green-text); margin-bottom: 8px; }
+  .proof-input-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+  .proof-input { flex: 1; padding: 7px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); outline: none; margin: 0; }
+  .proof-input:focus { border-color: var(--green-border); }
+  .proof-input[disabled] { opacity: 0.6; cursor: default; }
+  .drive-btn { font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 7px 11px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background 0.12s; }
+  .drive-btn:hover:not([disabled]) { background: var(--surface2); }
+  .drive-btn.has-proof { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+  .drive-btn[disabled] { opacity: 0.6; cursor: default; }
+  .unmark-btn { font-size: 11px; font-family: 'DM Sans', sans-serif; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(226,75,74,0.3); background: var(--red-bg); color: var(--red-text); cursor: pointer; white-space: nowrap; }
+
+  .bonus-list { display: flex; flex-direction: column; gap: 8px; }
+  .bonus-card { background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); overflow: hidden; }
+  .bonus-card.done { border-color: var(--green-border); }
+  .bonus-head { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px 8px; }
+  .bonus-info { flex: 1; }
+  .bonus-name { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.4; }
+  .bonus-card.done .bonus-name { color: var(--green-text); }
+  .bonus-pts-label { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .bonus-card.done .bonus-pts-label { color: var(--green); }
+
+  .bubbles-wrap { padding: 4px 14px 12px; }
+  .bubble-group { display: flex; align-items: center; gap: 5px; margin-bottom: 6px; flex-wrap: wrap; }
+  .bubble { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border2); cursor: pointer; flex-shrink: 0; transition: background 0.12s, border-color 0.12s; }
+  .bubble:hover:not(.readonly) { border-color: var(--green); }
+  .bubble.filled { background: var(--green); border-color: var(--green); }
+  .bubble.filled.completer { background: var(--green-dark); border-color: var(--green-dark); }
+  .bubble.readonly { cursor: default; opacity: 0.7; }
+  .bubble-group-sep { width: 1px; height: 16px; background: var(--border2); flex-shrink: 0; margin: 0 2px; }
+  .bubble-note-input { font-size: 11px; padding: 3px 7px; height: 26px; flex: 1; min-width: 80px; margin: 0; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; }
+  .bubble-note-input:focus { border-color: var(--green-border); }
+
+  .bonus-proof-panel { display: none; border-top: 1px solid var(--border); padding: 10px 14px; background: var(--green-bg); }
+  .bonus-proof-panel.open { display: block; }
+  .bonus-card.done .bonus-proof-panel { border-top-color: var(--green-border); }
+
+  .status-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--surface2); border-radius: var(--radius-sm); font-size: 12px; color: var(--text2); margin-bottom: 16px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .status-dot.loading { background: var(--gold); animation: pulse 1s infinite; }
+  .status-dot.error { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .lb-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 8px; }
+  .lb-row.me { border-color: var(--green-border); background: var(--green-bg); }
+  .lb-row.first { border-color: rgba(186,117,23,0.4); }
+  .lb-rank { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text2); width: 32px; text-align: center; flex-shrink: 0; }
+  .lb-row.first .lb-rank { color: var(--gold); }
+  .lb-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+  .lb-name { font-size: 14px; font-weight: 500; color: var(--text); }
+  .lb-row.me .lb-name { color: var(--green-text); }
+  .lb-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+  .lb-pts { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text); }
+  .lb-entries { font-size: 11px; color: var(--text2); text-align: right; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(44,36,22,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 28px; width: 100%; max-width: 340px; }
+  .modal-title { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.6; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .modal-actions .btn { margin: 0; }
+  .btn-ghost { background: var(--surface2); color: var(--text2); }
+  .pin-error { font-size: 13px; color: var(--red); text-align: center; margin-bottom: 12px; min-height: 20px; }
+
+  .reset-link { font-size: 12px; color: var(--text3); background: none; border: none; cursor: pointer; padding: 0; margin-top: 20px; text-decoration: underline; font-family: 'DM Sans', sans-serif; }
+  .saving-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); font-size: 12px; padding: 8px 16px; border-radius: 20px; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 200; white-space: nowrap; }
+  .saving-toast.show { opacity: 1; }
+  .credit { text-align: center; padding: 24px 20px 32px; font-size: 12px; color: var(--text3); line-height: 1.7; }
+  .credit strong { color: var(--text2); }
+</style>
+</head>
+<body>
+
+<div class="modal-overlay" id="pin-modal" style="display:none;">
+  <div class="modal-card">
+    <div class="modal-title" id="pin-modal-title">Enter your PIN</div>
+    <div class="modal-sub" id="pin-modal-sub">Enter your 4-digit PIN to unlock your profile.</div>
+    <div class="pin-row">
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" id="pin0" autocomplete="off" />
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" id="pin1" autocomplete="off" />
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" id="pin2" autocomplete="off" />
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" id="pin3" autocomplete="off" />
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closePinModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitPin()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <div class="header">
+    <div class="header-top">
+      <div class="logo">Flow <span>Challenge</span></div>
+    </div>
+    <div class="tab-bar" id="main-tabs" style="display:none;">
+      <button class="tab-btn active" onclick="showTab('tracker')">My tracker</button>
+      <button class="tab-btn" onclick="showTab('leaderboard')">Leaderboard</button>
+    </div>
+  </div>
+
+  <div class="screen active" id="screen-onboard">
+    <div class="card">
+      <div class="card-title">Join the challenge</div>
+      <p class="card-sub">Create your profile and set a PIN to protect your progress.</p>
+      <div class="field-label">Your name</div>
+      <input type="text" id="ob-name" placeholder="e.g. Aisha" maxlength="24" />
+      <div class="field-label">Pick a colour</div>
+      <div class="av-grid" id="av-picker"></div>
+      <div class="field-label">Set your PIN</div>
+      <div class="pin-hint">Choose a 4-digit PIN — you'll need this to edit your profile</div>
+      <div class="pin-row">
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" id="new-pin0" autocomplete="off" />
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" id="new-pin1" autocomplete="off" />
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" id="new-pin2" autocomplete="off" />
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" id="new-pin3" autocomplete="off" />
+      </div>
+      <button class="btn btn-primary" onclick="createProfile()" id="create-btn">Join the challenge</button>
+      <hr class="divider" />
+      <div class="field-label">Already have a profile?</div>
+      <select id="ob-switch"></select>
+      <button class="btn btn-secondary" onclick="startSwitchProfile()">Switch to this profile</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-main">
+    <div id="tab-tracker">
+      <div class="profile-bar">
+        <div class="profile-avatar" id="current-avatar"></div>
+        <select id="profile-switcher" onchange="onProfileSelect(this.value)"></select>
+        <button onclick="goOnboard()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:12px;border-radius:var(--radius-sm);cursor:pointer;padding:6px 10px;white-space:nowrap;">+ New</button>
+      </div>
+
+      <div id="viewonly-banner" style="display:none;" class="viewonly-banner">
+        <div>
+          <div class="viewonly-text">Viewing <span id="viewonly-name"></span>'s tracker</div>
+          <div class="viewonly-sub">View only — enter PIN to edit</div>
+        </div>
+        <button class="unlock-btn" onclick="promptPin('unlock')">Enter PIN</button>
+      </div>
+
+      <div class="status-bar">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">Connected</span>
+      </div>
+
+      <div class="pts-banner">
+        <div class="pts-card"><div class="pts-label">Classes</div><div class="pts-num" id="classCount">0</div><div class="pts-sub">of 21 pts</div></div>
+        <div class="pts-card"><div class="pts-label">Bonus</div><div class="pts-num" id="bonusCount">0</div><div class="pts-sub">pts earned</div></div>
+        <div class="pts-card"><div class="pts-label">Total</div><div class="pts-num" id="totalCount">0</div><div class="pts-sub">pts</div></div>
+      </div>
+      <div class="lucky-bar">
+        <div>
+          <div class="lucky-label">Lucky draw entries</div>
+          <div class="lucky-sub">every 12 pts = 1 entry</div>
+        </div>
+        <div class="lucky-num" id="luckyCount">0</div>
+      </div>
+
+      <div class="section-title">Classes attended</div>
+      <div id="classGrid"></div>
+
+      <div class="section-title">+1 pt bonuses</div>
+      <div class="bonus-list" id="grid1"></div>
+      <div class="section-title">+2 pt bonuses</div>
+      <div class="bonus-list" id="grid2"></div>
+      <div class="section-title">+3 pt bonuses</div>
+      <div class="bonus-list" id="grid3"></div>
+      <div class="section-title">+5 pt bonuses</div>
+      <div class="bonus-list" id="grid5"></div>
+      <div class="section-title">Early signup</div>
+      <div class="bonus-list" id="gridE"></div>
+      <div id="custom-challenges-wrap" style="display:none;">
+        <div class="section-title">Weekly bonus challenges</div>
+        <div class="bonus-list" id="gridCustom"></div>
+      </div>
+
+      <button class="reset-link" id="reset-btn" onclick="resetCurrent()">Reset my progress</button>
+    </div>
+
+    <div id="tab-leaderboard" style="display:none;">
+      <div class="status-bar">
+        <div class="status-dot" id="lb-status-dot"></div>
+        <span id="lb-status-text">Loading...</span>
+      </div>
+      <div id="lb-list"></div>
+      <div style="text-align:center;margin-top:16px;">
+        <button class="drive-btn" onclick="openDrive()" style="font-size:13px;padding:9px 16px;">Open proof folder on Drive</button>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:12px;text-align:center;">Refresh to see latest scores</div>
+    </div>
+  </div>
+
+  <div class="credit">
+    Made by <strong>Tiffany Wen</strong><br>
+    <span style="font-size:11px;">because Flow was doing manual insanity and someone had to fix it</span>
+  </div>
+</div>
+
+<div class="saving-toast" id="toast"></div>
+
+<script>
+var SCRIPT_URL = 'PASTE_STAGING_SCRIPT_URL_HERE';
+var DRIVE_URL = 'https://drive.google.com/drive/folders/1WaEOliYqb-Ih5MMBVH_pcdyhX5o4t4E0';
+var CURRENT_KEY = 'flow_current_id_v4';
+var UNLOCKED_KEY = 'flow_unlocked_v4';
+var AV_COLORS = ['#1D9E75','#378ADD','#D4537E','#D85A30','#7F77DD','#BA7517'];
+var MAX_CLASSES = 21;
+
+var B1 = [
+  {id:'ig_instr', name:'IG story with instructor', max:4, groupSize:1, pts:1},
+  {id:'ig_friend', name:'IG story with new friend', max:4, groupSize:1, pts:1},
+  {id:'merch', name:'Class in Flow merch', max:4, groupSize:1, pts:1}
+];
+var B2 = [
+  {id:'wkday_morn', name:'2 weekday morning classes', max:6, groupSize:2, pts:2, notePrompt:'e.g. Mon & Wed morning'},
+  {id:'pilates_chair', name:'2 Pilates Chair Sculpt', max:6, groupSize:2, pts:2, notePrompt:'e.g. class dates'},
+  {id:'diff_instr', name:'4 different instructors', max:12, groupSize:4, pts:2, notePrompt:'Instructor name', perBubbleNote:true},
+  {id:'megastrength', name:'2 MegaStrength classes', max:6, groupSize:2, pts:2, notePrompt:'e.g. class dates'},
+  {id:'drunk_elephant', name:'Drunk Elephant workshop', max:1, groupSize:1, pts:2, notePrompt:'e.g. date attended'}
+];
+var B3 = [
+  {id:'refer', name:'Refer friend to intro pack', max:4, groupSize:1, pts:3, notePrompt:'Friend name'},
+  {id:'google_review', name:'Google review for 2 studios', max:3, groupSize:1, pts:3, notePrompt:'Studio names'},
+  {id:'five_days', name:'5 days in a row', max:15, groupSize:5, pts:3, notePrompt:'e.g. Mon 7 Apr - Fri 11 Apr'}
+];
+var B5 = [
+  {id:'team4', name:'Register as team of 4', max:1, groupSize:1, pts:5, notePrompt:'Team members'},
+  {id:'before_after', name:'IG feed before & after', max:1, groupSize:1, pts:5, notePrompt:'Post link or date'}
+];
+
+var profiles = {};
+var customChallenges = [];
+var currentId = localStorage.getItem(CURRENT_KEY) || '';
+var unlockedIds = JSON.parse(sessionStorage.getItem(UNLOCKED_KEY) || '[]');
+var saveTimer = null;
+var expandedClass = null;
+var expandedBonuses = {};
+var pinCallback = null;
+var viewingId = '';
+
+function openDrive() { window.open(DRIVE_URL, '_blank'); }
+
+function hashPin(pin) {
+  var h = 0;
+  for (var i = 0; i < pin.length; i++) { h = (Math.imul(31, h) + pin.charCodeAt(i)) | 0; }
+  return h.toString(36);
+}
+
+function getPinValue(prefix) {
+  var pin = '';
+  for (var i = 0; i < 4; i++) { pin += document.getElementById(prefix + i).value; }
+  return pin;
+}
+
+function clearPinInputs(prefix) {
+  for (var i = 0; i < 4; i++) { var el = document.getElementById(prefix + i); if (el) el.value = ''; }
+}
+
+function setupPinInputs(prefix) {
+  for (var i = 0; i < 4; i++) {
+    (function(idx) {
+      var input = document.getElementById(prefix + idx);
+      if (!input) return;
+      input.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(-1);
+        if (this.value && idx < 3) document.getElementById(prefix + (idx + 1)).focus();
+      });
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && !this.value && idx > 0) document.getElementById(prefix + (idx - 1)).focus();
+      });
+    })(i);
+  }
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+function setStatus(prefix, state, text) {
+  var dot = document.getElementById(prefix + '-dot');
+  var txt = document.getElementById(prefix + '-text');
+  if (!dot || !txt) return;
+  dot.className = 'status-dot' + (state === 'loading' ? ' loading' : state === 'error' ? ' error' : '');
+  txt.textContent = text;
+}
+
+function apiGet(params) {
+  var url = new URL(SCRIPT_URL);
+  Object.keys(params).forEach(function(k) { url.searchParams.set(k, params[k]); });
+  return fetch(url.toString()).then(function(r) { return r.json(); });
+}
+
+function apiPost(body) {
+  return fetch(SCRIPT_URL, {method:'POST', body:JSON.stringify(body)}).then(function(r) { return r.json(); });
+}
+
+function initials(name) {
+  return name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2) || '?';
+}
+
+function calcBonus(p) {
+  var t = 0;
+  var allB = B1.concat(B2).concat(B3).concat(B5);
+  allB.forEach(function(b) {
+    var filled = (p.bonuses && p.bonuses[b.id]) || 0;
+    var completions = b.groupSize > 1 ? Math.floor(filled / b.groupSize) : filled;
+    t += completions * b.pts;
+  });
+  if (customChallenges && customChallenges.length) {
+    customChallenges.forEach(function(b) {
+      var filled = (p.customBonuses && p.customBonuses[b.id]) || 0;
+      var gs = b.groupSize || 1;
+      var completions = gs > 1 ? Math.floor(filled / gs) : filled;
+      t += completions * (b.pts || 1);
+    });
+  }
+  t += (p.earlySignup || 0) * 3;
+  return t;
+}
+
+function calcTotal(p) { return (p.classes || 0) + calcBonus(p); }
+
+function isEditable() { return viewingId === currentId || unlockedIds.indexOf(viewingId) !== -1; }
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById('screen-' + name).classList.add('active');
+}
+
+function showTab(name) {
+  document.getElementById('tab-tracker').style.display = name === 'tracker' ? 'block' : 'none';
+  document.getElementById('tab-leaderboard').style.display = name === 'leaderboard' ? 'block' : 'none';
+  document.querySelectorAll('.tab-btn').forEach(function(b, i) {
+    b.classList.toggle('active', (i===0&&name==='tracker')||(i===1&&name==='leaderboard'));
+  });
+  if (name === 'leaderboard') loadLeaderboard();
+}
+
+function promptPin(mode, targetId) {
+  var modal = document.getElementById('pin-modal');
+  document.getElementById('pin-error').textContent = '';
+  clearPinInputs('pin');
+  if (mode === 'unlock') {
+    var name = profiles[viewingId] ? profiles[viewingId].name : 'this profile';
+    document.getElementById('pin-modal-title').textContent = 'Enter PIN';
+    document.getElementById('pin-modal-sub').textContent = 'Enter ' + name + "'s PIN to edit their tracker.";
+    pinCallback = function(pin) {
+      var p = profiles[viewingId];
+      if (!p || !p.pinHash || hashPin(pin) !== p.pinHash) return false;
+      if (unlockedIds.indexOf(viewingId) === -1) unlockedIds.push(viewingId);
+      sessionStorage.setItem(UNLOCKED_KEY, JSON.stringify(unlockedIds));
+      return true;
+    };
+  } else if (mode === 'switch') {
+    var name2 = profiles[targetId] ? profiles[targetId].name : 'this profile';
+    document.getElementById('pin-modal-title').textContent = 'Enter PIN';
+    document.getElementById('pin-modal-sub').textContent = 'Enter ' + name2 + "'s PIN to switch to their profile.";
+    pinCallback = function(pin) {
+      var p = profiles[targetId];
+      if (!p || !p.pinHash || hashPin(pin) !== p.pinHash) return false;
+      currentId = targetId; viewingId = targetId;
+      localStorage.setItem(CURRENT_KEY, currentId);
+      if (unlockedIds.indexOf(targetId) === -1) unlockedIds.push(targetId);
+      sessionStorage.setItem(UNLOCKED_KEY, JSON.stringify(unlockedIds));
+      return true;
+    };
+  }
+  modal.style.display = 'flex';
+  setTimeout(function() { document.getElementById('pin0').focus(); }, 100);
+}
+
+function submitPin() {
+  var pin = getPinValue('pin');
+  if (pin.length < 4) { document.getElementById('pin-error').textContent = 'Please enter all 4 digits.'; return; }
+  if (!pinCallback || !pinCallback(pin)) {
+    document.getElementById('pin-error').textContent = 'Incorrect PIN. Try again.';
+    clearPinInputs('pin');
+    document.getElementById('pin0').focus();
+    return;
+  }
+  closePinModal();
+  expandedClass = null; expandedBonuses = {};
+  showMain();
+}
+
+function closePinModal() {
+  document.getElementById('pin-modal').style.display = 'none';
+  clearPinInputs('pin');
+  document.getElementById('pin-error').textContent = '';
+  pinCallback = null;
+  var sel = document.getElementById('profile-switcher');
+  if (sel) sel.value = viewingId;
+}
+
+function renderAvatarPicker(selected) {
+  var el = document.getElementById('av-picker');
+  el.innerHTML = '';
+  AV_COLORS.forEach(function(c) {
+    var d = document.createElement('div');
+    d.className = 'av-opt' + (c === selected ? ' selected' : '');
+    d.style.background = c;
+    d.onclick = function() {
+      document.querySelectorAll('.av-opt').forEach(function(x) { x.classList.remove('selected'); });
+      d.classList.add('selected');
+    };
+    el.appendChild(d);
+  });
+}
+
+function getSelectedColor() {
+  var s = document.querySelector('.av-opt.selected');
+  return s ? s.style.background : AV_COLORS[0];
+}
+
+function populateSwitcher() {
+  var sel = document.getElementById('ob-switch');
+  sel.innerHTML = '<option value="">— select —</option>';
+  Object.keys(profiles).forEach(function(id) {
+    var o = document.createElement('option');
+    o.value = id; o.textContent = profiles[id].name;
+    sel.appendChild(o);
+  });
+}
+
+function goOnboard() {
+  renderAvatarPicker(AV_COLORS[0]);
+  clearPinInputs('new-pin');
+  populateSwitcher();
+  showScreen('onboard');
+  document.getElementById('main-tabs').style.display = 'none';
+}
+
+function createProfile() {
+  var name = document.getElementById('ob-name').value.trim();
+  if (!name) { alert('Please enter your name.'); return; }
+  var pin = getPinValue('new-pin');
+  if (pin.length < 4) { alert('Please set a 4-digit PIN.'); return; }
+  var color = getSelectedColor();
+  var btn = document.getElementById('create-btn');
+  btn.textContent = 'Creating...'; btn.disabled = true;
+  apiPost({action:'createProfile', name:name, color:color}).then(function(r) {
+    if (r.error) { alert('Error: ' + r.error); return; }
+    profiles[r.id] = {name:name, color:color, classes:0, bonuses:{}, customBonuses:{}, notes:{}, classNotes:{}, earlySignup:0, pinHash:hashPin(pin)};
+    apiPost({action:'saveProfile', id:r.id, data:profiles[r.id]});
+    currentId = r.id; viewingId = r.id;
+    localStorage.setItem(CURRENT_KEY, currentId);
+    if (unlockedIds.indexOf(r.id) === -1) unlockedIds.push(r.id);
+    sessionStorage.setItem(UNLOCKED_KEY, JSON.stringify(unlockedIds));
+    expandedClass = null; expandedBonuses = {};
+    showMain();
+  }).catch(function() {
+    alert('Could not create profile.');
+  }).finally(function() {
+    btn.textContent = 'Join the challenge'; btn.disabled = false;
+  });
+}
+
+function startSwitchProfile() {
+  var id = document.getElementById('ob-switch').value;
+  if (!id) return;
+  if (id === currentId || unlockedIds.indexOf(id) !== -1) {
+    currentId = id; viewingId = id;
+    localStorage.setItem(CURRENT_KEY, currentId);
+    expandedClass = null; expandedBonuses = {};
+    showMain();
+  } else {
+    promptPin('switch', id);
+  }
+}
+
+function onProfileSelect(id) {
+  if (!id) return;
+  viewingId = id;
+  expandedClass = null; expandedBonuses = {};
+  renderProfileSwitcher();
+  renderCurrentAvatar();
+  renderTracker();
+}
+
+function showMain() {
+  viewingId = viewingId || currentId;
+  showScreen('main');
+  document.getElementById('main-tabs').style.display = 'flex';
+  renderProfileSwitcher();
+  renderCurrentAvatar();
+  renderTracker();
+}
+
+function renderProfileSwitcher() {
+  var sel = document.getElementById('profile-switcher');
+  sel.innerHTML = '';
+  Object.keys(profiles).forEach(function(id) {
+    var o = document.createElement('option');
+    o.value = id;
+    o.textContent = profiles[id].name + (id === currentId ? ' (you)' : '');
+    if (id === viewingId) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+function renderCurrentAvatar() {
+  var p = profiles[viewingId]; if (!p) return;
+  var el = document.getElementById('current-avatar');
+  el.style.background = p.color + '30'; el.style.color = p.color;
+  el.textContent = initials(p.name);
+}
+
+function vp() { return profiles[viewingId]; }
+
+function renderTracker() {
+  var p = vp(); if (!p) return;
+  var editable = isEditable();
+  var bonus = calcBonus(p);
+  var total = (p.classes || 0) + bonus;
+  document.getElementById('classCount').textContent = p.classes || 0;
+  document.getElementById('bonusCount').textContent = bonus;
+  document.getElementById('totalCount').textContent = total;
+  document.getElementById('luckyCount').textContent = Math.floor(total / 12);
+
+  var banner = document.getElementById('viewonly-banner');
+  var resetBtn = document.getElementById('reset-btn');
+  var isOwn = viewingId === currentId;
+  if (isOwn) {
+    banner.style.display = 'none';
+    resetBtn.style.display = 'block';
+  } else if (editable) {
+    banner.style.display = 'none';
+    resetBtn.style.display = 'none';
+  } else {
+    banner.style.display = 'flex';
+    document.getElementById('viewonly-name').textContent = p.name;
+    resetBtn.style.display = 'none';
+  }
+
+  renderClassGrid();
+  renderBonusGroup('grid1', B1);
+  renderBonusGroup('grid2', B2);
+  renderBonusGroup('grid3', B3);
+  renderBonusGroup('grid5', B5);
+  renderEarlyBonus();
+  renderCustomChallenges();
+  setStatus('status', 'ok', isOwn ? 'Connected — syncing with group' : 'Viewing ' + p.name + "'s tracker");
+}
+
+function renderClassGrid() {
+  var p = vp();
+  var editable = isEditable();
+  var container = document.getElementById('classGrid');
+  container.innerHTML = '';
+  if (!p.classNotes) p.classNotes = {};
+  if (expandedClass === null && (p.classes || 0) > 0) expandedClass = (p.classes || 0) - 1;
+
+  var dotGrid = document.createElement('div');
+  dotGrid.className = 'classes-grid';
+  for (var i = 0; i < MAX_CLASSES; i++) {
+    (function(idx) {
+      var isDone = idx < (p.classes || 0);
+      var isExp = expandedClass === idx && isDone;
+      var dot = document.createElement('div');
+      dot.className = 'class-dot' + (isDone ? ' done' : '') + (isExp ? ' expanded' : '') + (!editable ? ' readonly' : '');
+      dot.onclick = function() {
+        if (!editable) return;
+        if (!isDone) { p.classes = idx + 1; expandedClass = idx; renderTracker(); scheduleSave(); }
+        else { expandedClass = expandedClass === idx ? -1 : idx; renderClassGrid(); }
+      };
+      dotGrid.appendChild(dot);
+    })(i);
+  }
+  container.appendChild(dotGrid);
+
+  if (expandedClass !== null && expandedClass >= 0 && expandedClass < (p.classes || 0)) {
+    (function(idx) {
+      var note = (p.classNotes && p.classNotes[idx]) || '';
+      var editable2 = isEditable();
+      var panel = document.createElement('div');
+      panel.className = 'class-proof-panel open';
+      var label = document.createElement('div');
+      label.className = 'proof-panel-label';
+      label.textContent = 'Class ' + (idx + 1) + ' — proof';
+      panel.appendChild(label);
+      var inputRow = document.createElement('div');
+      inputRow.className = 'proof-input-row';
+      var input = document.createElement('input');
+      input.type = 'text'; input.className = 'proof-input';
+      input.placeholder = editable2 ? 'Add a note (e.g. reformer class, 7 Apr)' : 'No note added';
+      input.value = note; input.disabled = !editable2;
+      var driveBtn = document.createElement('button');
+      driveBtn.className = 'drive-btn' + (note ? ' has-proof' : '');
+      driveBtn.textContent = note ? 'Proof added' : 'Upload proof';
+      driveBtn.disabled = !editable2;
+      driveBtn.onclick = function() { if (editable2) openDrive(); };
+      if (editable2) {
+        input.addEventListener('change', function() {
+          if (!p.classNotes) p.classNotes = {};
+          p.classNotes[idx] = input.value;
+          driveBtn.className = 'drive-btn' + (input.value ? ' has-proof' : '');
+          driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
+          scheduleSave();
+        });
+      }
+      inputRow.appendChild(input); inputRow.appendChild(driveBtn);
+      panel.appendChild(inputRow);
+      if (editable2) {
+        var unmarkBtn = document.createElement('button');
+        unmarkBtn.className = 'unmark-btn';
+        unmarkBtn.textContent = 'Unmark class ' + (idx + 1);
+        unmarkBtn.onclick = function() {
+          if (!confirm('Unmark Class ' + (idx+1) + '? This will also unmark later classes.')) return;
+          p.classes = idx;
+          if (p.classNotes) { for (var k = idx; k < MAX_CLASSES; k++) delete p.classNotes[k]; }
+          expandedClass = idx > 0 ? idx - 1 : null;
+          renderTracker(); scheduleSave();
+        };
+        panel.appendChild(unmarkBtn);
+      }
+      container.appendChild(panel);
+    })(expandedClass);
+  }
+}
+
+function renderBonusGroup(gridId, list) {
+  var p = vp();
+  var editable = isEditable();
+  var grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+
+  list.forEach(function(b) {
+    var filled = (p.bonuses && p.bonuses[b.id]) || 0;
+    var groupSize = b.groupSize || 1;
+    var totalBubbles = b.max;
+    var completions = groupSize > 1 ? Math.floor(filled / groupSize) : filled;
+    var isDone = filled >= totalBubbles;
+
+    var card = document.createElement('div');
+    card.className = 'bonus-card' + (isDone ? ' done' : '');
+
+    var head = document.createElement('div');
+    head.className = 'bonus-head';
+    var info = document.createElement('div');
+    info.className = 'bonus-info';
+    var nameEl = document.createElement('div');
+    nameEl.className = 'bonus-name';
+    nameEl.textContent = b.name;
+    var ptsEl = document.createElement('div');
+    ptsEl.className = 'bonus-pts-label';
+    if (groupSize > 1) {
+      ptsEl.textContent = '+' + b.pts + ' pts per ' + groupSize + ' · ' + completions + ' set' + (completions !== 1 ? 's' : '') + ' completed';
+    } else {
+      ptsEl.textContent = '+' + b.pts + ' pt' + (b.pts > 1 ? 's' : '') + ' each · ' + filled + ' completed';
+    }
+    info.appendChild(nameEl); info.appendChild(ptsEl);
+    head.appendChild(info);
+    card.appendChild(head);
+
+    var bubblesWrap = document.createElement('div');
+    bubblesWrap.className = 'bubbles-wrap';
+
+    var numGroups = Math.ceil(totalBubbles / groupSize);
+    for (var g = 0; g < numGroups; g++) {
+      var groupWrap = document.createElement('div');
+      groupWrap.className = 'bubble-group';
+
+      for (var bi = 0; bi < groupSize; bi++) {
+        var bubbleIdx = g * groupSize + bi;
+        if (bubbleIdx >= totalBubbles) break;
+
+        (function(idx) {
+          var isFilled = idx < filled;
+          var isCompleter = groupSize > 1 && ((idx + 1) % groupSize === 0);
+
+          var dot = document.createElement('div');
+          dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter ? ' completer' : '') + (!editable ? ' readonly' : '');
+
+          if (editable) {
+            dot.onclick = function(e) {
+              e.stopPropagation();
+              if (!p.bonuses) p.bonuses = {};
+              if (!isFilled) {
+                p.bonuses[b.id] = idx + 1;
+                if (isCompleter || groupSize === 1) expandedBonuses[b.id] = idx;
+                renderBonusGroup(gridId, list);
+                renderTracker();
+                scheduleSave();
+              } else {
+                if (isCompleter || groupSize === 1) {
+                  expandedBonuses[b.id] = expandedBonuses[b.id] === idx ? -1 : idx;
+                  renderBonusGroup(gridId, list);
+                }
+              }
+            };
+          }
+
+          groupWrap.appendChild(dot);
+
+          if (b.perBubbleNote && isFilled) {
+            var noteKey = b.id + '_bubble_' + idx;
+            var bNote = (p.notes && p.notes[noteKey]) || '';
+            var bInput = document.createElement('input');
+            bInput.className = 'bubble-note-input';
+            bInput.type = 'text';
+            bInput.placeholder = b.notePrompt || 'Note...';
+            bInput.value = bNote;
+            bInput.disabled = !editable;
+            if (editable) {
+              bInput.addEventListener('change', function() {
+                if (!p.notes) p.notes = {};
+                p.notes[noteKey] = bInput.value;
+                scheduleSave();
+              });
+            }
+            groupWrap.appendChild(bInput);
+          }
+        })(bubbleIdx);
+      }
+
+      if (groupSize > 1 && g < numGroups - 1) {
+        var sep = document.createElement('div');
+        sep.className = 'bubble-group-sep';
+        groupWrap.appendChild(sep);
+      }
+
+      bubblesWrap.appendChild(groupWrap);
+    }
+    card.appendChild(bubblesWrap);
+
+    var expDot = expandedBonuses[b.id];
+    if (expDot !== undefined && expDot >= 0 && expDot < filled && !b.perBubbleNote) {
+      var isCompleterExp = groupSize > 1 ? ((expDot + 1) % groupSize === 0) : true;
+      if (isCompleterExp) {
+        (function(dotIdx) {
+          var groupNum = groupSize > 1 ? Math.floor(dotIdx / groupSize) + 1 : dotIdx + 1;
+          var noteKey = b.id + '_group_' + groupNum;
+          var existingNote = (p.notes && p.notes[noteKey]) || '';
+          var editable2 = isEditable();
+
+          var panel = document.createElement('div');
+          panel.className = 'bonus-proof-panel open';
+          var panelLabel = document.createElement('div');
+          panelLabel.className = 'proof-panel-label';
+          panelLabel.textContent = groupSize > 1 ? b.name + ' — set ' + groupNum + ' proof' : b.name + ' #' + groupNum + ' — proof';
+          panel.appendChild(panelLabel);
+
+          var inputRow = document.createElement('div');
+          inputRow.className = 'proof-input-row';
+          var input = document.createElement('input');
+          input.type = 'text'; input.className = 'proof-input';
+          input.placeholder = b.notePrompt || 'Add a proof note...';
+          input.value = existingNote; input.disabled = !editable2;
+          var driveBtn = document.createElement('button');
+          driveBtn.className = 'drive-btn' + (existingNote ? ' has-proof' : '');
+          driveBtn.textContent = existingNote ? 'Proof added' : 'Upload proof';
+          driveBtn.disabled = !editable2;
+          driveBtn.onclick = function() { if (editable2) openDrive(); };
+          if (editable2) {
+            input.addEventListener('change', function() {
+              if (!p.notes) p.notes = {};
+              p.notes[noteKey] = input.value;
+              driveBtn.className = 'drive-btn' + (input.value ? ' has-proof' : '');
+              driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
+              scheduleSave();
+            });
+          }
+          inputRow.appendChild(input); inputRow.appendChild(driveBtn);
+          panel.appendChild(inputRow);
+
+          if (editable2) {
+            var unmarkBtn = document.createElement('button');
+            unmarkBtn.className = 'unmark-btn';
+            unmarkBtn.textContent = groupSize > 1 ? 'Unmark set ' + groupNum : 'Unmark this';
+            unmarkBtn.onclick = function() {
+              if (!confirm('Unmark this completion?')) return;
+              if (!p.bonuses) p.bonuses = {};
+              p.bonuses[b.id] = (groupNum - 1) * groupSize;
+              if (p.notes) delete p.notes[noteKey];
+              delete expandedBonuses[b.id];
+              renderBonusGroup(gridId, list);
+              renderTracker(); scheduleSave();
+            };
+            panel.appendChild(unmarkBtn);
+          }
+          card.appendChild(panel);
+        })(expDot);
+      }
+    }
+
+    grid.appendChild(card);
+  });
+}
+
+function renderEarlyBonus() {
+  var p = vp();
+  var editable = isEditable();
+  var grid = document.getElementById('gridE');
+  grid.innerHTML = '';
+  var done = p.earlySignup || 0;
+  var note = (p.notes && p.notes['early']) || '';
+  var isExp = expandedBonuses['early'] === 0 && done;
+
+  var card = document.createElement('div');
+  card.className = 'bonus-card' + (done ? ' done' : '');
+  var head = document.createElement('div');
+  head.className = 'bonus-head';
+  var info = document.createElement('div');
+  info.className = 'bonus-info';
+  var nameEl = document.createElement('div');
+  nameEl.className = 'bonus-name';
+  nameEl.textContent = 'First 50 signups';
+  var ptsEl = document.createElement('div');
+  ptsEl.className = 'bonus-pts-label';
+  ptsEl.textContent = '+3 pts · ' + (done ? '1 completed' : '0 completed');
+  info.appendChild(nameEl); info.appendChild(ptsEl);
+  head.appendChild(info);
+
+  var bubblesWrap = document.createElement('div');
+  bubblesWrap.className = 'bubbles-wrap';
+  var dot = document.createElement('div');
+  dot.className = 'bubble' + (done ? ' filled' : '') + (!editable ? ' readonly' : '');
+  if (editable) {
+    dot.onclick = function() {
+      if (!done) { p.earlySignup = 1; expandedBonuses['early'] = 0; renderEarlyBonus(); renderTracker(); scheduleSave(); }
+      else { expandedBonuses['early'] = expandedBonuses['early'] === 0 ? -1 : 0; renderEarlyBonus(); }
+    };
+  }
+  bubblesWrap.appendChild(dot);
+  card.appendChild(head);
+  card.appendChild(bubblesWrap);
+
+  if (isExp) {
+    var panel = document.createElement('div');
+    panel.className = 'bonus-proof-panel open';
+    var panelLabel = document.createElement('div');
+    panelLabel.className = 'proof-panel-label';
+    panelLabel.textContent = 'First 50 signups — proof';
+    panel.appendChild(panelLabel);
+    var inputRow = document.createElement('div');
+    inputRow.className = 'proof-input-row';
+    var input = document.createElement('input');
+    input.type = 'text'; input.className = 'proof-input';
+    input.placeholder = editable ? 'Add a proof note...' : 'No note added';
+    input.value = note; input.disabled = !editable;
+    var driveBtn = document.createElement('button');
+    driveBtn.className = 'drive-btn' + (note ? ' has-proof' : '');
+    driveBtn.textContent = note ? 'Proof added' : 'Upload proof';
+    driveBtn.disabled = !editable;
+    driveBtn.onclick = function() { if (editable) openDrive(); };
+    if (editable) {
+      input.addEventListener('change', function() {
+        if (!p.notes) p.notes = {};
+        p.notes['early'] = input.value;
+        driveBtn.className = 'drive-btn' + (input.value ? ' has-proof' : '');
+        driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
+        scheduleSave();
+      });
+      var unmarkBtn = document.createElement('button');
+      unmarkBtn.className = 'unmark-btn';
+      unmarkBtn.textContent = 'Unmark this';
+      unmarkBtn.onclick = function() {
+        if (!confirm('Unmark early signup bonus?')) return;
+        p.earlySignup = 0;
+        if (p.notes) delete p.notes['early'];
+        delete expandedBonuses['early'];
+        renderEarlyBonus(); renderTracker(); scheduleSave();
+      };
+      inputRow.appendChild(input); inputRow.appendChild(driveBtn);
+      panel.appendChild(inputRow); panel.appendChild(unmarkBtn);
+    } else {
+      inputRow.appendChild(input); inputRow.appendChild(driveBtn);
+      panel.appendChild(inputRow);
+    }
+    card.appendChild(panel);
+  }
+  grid.appendChild(card);
+}
+
+function renderCustomChallenges() {
+  var wrap = document.getElementById('custom-challenges-wrap');
+  var grid = document.getElementById('gridCustom');
+  if (!wrap || !grid) return;
+  if (!customChallenges || customChallenges.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  grid.innerHTML = '';
+  var p = vp();
+  if (!p.customBonuses) p.customBonuses = {};
+
+  customChallenges.forEach(function(b) {
+    var filled = (p.customBonuses && p.customBonuses[b.id]) || 0;
+    var gs = b.groupSize || 1;
+    var totalBubbles = b.max || 1;
+    var completions = gs > 1 ? Math.floor(filled / gs) : filled;
+    var isDone = filled >= totalBubbles;
+    var editable = isEditable();
+
+    var card = document.createElement('div');
+    card.className = 'bonus-card' + (isDone ? ' done' : '');
+    var head = document.createElement('div');
+    head.className = 'bonus-head';
+    var info = document.createElement('div');
+    info.className = 'bonus-info';
+    var nameEl = document.createElement('div');
+    nameEl.className = 'bonus-name';
+    nameEl.textContent = b.name + (b.week ? ' (' + b.week + ')' : '');
+    var ptsEl = document.createElement('div');
+    ptsEl.className = 'bonus-pts-label';
+    ptsEl.textContent = gs > 1
+      ? '+' + b.pts + ' pts per ' + gs + ' · ' + completions + ' set' + (completions !== 1 ? 's' : '') + ' completed'
+      : '+' + b.pts + ' pt' + (b.pts > 1 ? 's' : '') + ' each · ' + filled + ' completed';
+    info.appendChild(nameEl); info.appendChild(ptsEl);
+    head.appendChild(info);
+    card.appendChild(head);
+
+    var bubblesWrap = document.createElement('div');
+    bubblesWrap.className = 'bubbles-wrap';
+    var numGroups = Math.ceil(totalBubbles / gs);
+    for (var g = 0; g < numGroups; g++) {
+      var groupWrap = document.createElement('div');
+      groupWrap.className = 'bubble-group';
+      for (var bi = 0; bi < gs; bi++) {
+        var bubbleIdx = g * gs + bi;
+        if (bubbleIdx >= totalBubbles) break;
+        (function(idx) {
+          var isFilled = idx < filled;
+          var isCompleter = gs > 1 ? ((idx + 1) % gs === 0) : true;
+          var dot = document.createElement('div');
+          dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter ? ' completer' : '') + (!editable ? ' readonly' : '');
+          if (editable) {
+            dot.onclick = function(e) {
+              e.stopPropagation();
+              if (!p.customBonuses) p.customBonuses = {};
+              if (!isFilled) {
+                p.customBonuses[b.id] = idx + 1;
+                if (isCompleter) expandedBonuses['c_'+b.id] = idx;
+                renderCustomChallenges(); renderTracker(); scheduleSave();
+              } else if (isCompleter) {
+                expandedBonuses['c_'+b.id] = expandedBonuses['c_'+b.id] === idx ? -1 : idx;
+                renderCustomChallenges();
+              }
+            };
+          }
+          groupWrap.appendChild(dot);
+        })(bubbleIdx);
+      }
+      if (gs > 1 && g < numGroups - 1) {
+        var sep = document.createElement('div');
+        sep.className = 'bubble-group-sep';
+        groupWrap.appendChild(sep);
+      }
+      bubblesWrap.appendChild(groupWrap);
+    }
+    card.appendChild(bubblesWrap);
+
+    var expDot = expandedBonuses['c_'+b.id];
+    if (expDot !== undefined && expDot >= 0 && expDot < filled) {
+      (function(dotIdx) {
+        var groupNum = gs > 1 ? Math.floor(dotIdx / gs) + 1 : dotIdx + 1;
+        var noteKey = 'custom_' + b.id + '_' + groupNum;
+        var existingNote = (p.notes && p.notes[noteKey]) || '';
+        var editable2 = isEditable();
+        var panel = document.createElement('div');
+        panel.className = 'bonus-proof-panel open';
+        var panelLabel = document.createElement('div');
+        panelLabel.className = 'proof-panel-label';
+        panelLabel.textContent = b.name + (gs > 1 ? ' — set ' + groupNum + ' proof' : ' #' + groupNum + ' — proof');
+        panel.appendChild(panelLabel);
+        var inputRow = document.createElement('div');
+        inputRow.className = 'proof-input-row';
+        var input = document.createElement('input');
+        input.type = 'text'; input.className = 'proof-input';
+        input.placeholder = b.notePrompt || 'Add a proof note...';
+        input.value = existingNote; input.disabled = !editable2;
+        var driveBtn = document.createElement('button');
+        driveBtn.className = 'drive-btn' + (existingNote ? ' has-proof' : '');
+        driveBtn.textContent = existingNote ? 'Proof added' : 'Upload proof';
+        driveBtn.disabled = !editable2;
+        driveBtn.onclick = function() { if (editable2) openDrive(); };
+        if (editable2) {
+          input.addEventListener('change', function() {
+            if (!p.notes) p.notes = {};
+            p.notes[noteKey] = input.value;
+            driveBtn.className = 'drive-btn' + (input.value ? ' has-proof' : '');
+            driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
+            scheduleSave();
+          });
+          var unmarkBtn = document.createElement('button');
+          unmarkBtn.className = 'unmark-btn';
+          unmarkBtn.textContent = 'Unmark this';
+          unmarkBtn.onclick = function() {
+            if (!confirm('Unmark this completion?')) return;
+            if (!p.customBonuses) p.customBonuses = {};
+            p.customBonuses[b.id] = (groupNum - 1) * gs;
+            if (p.notes) delete p.notes[noteKey];
+            delete expandedBonuses['c_'+b.id];
+            renderCustomChallenges(); renderTracker(); scheduleSave();
+          };
+          inputRow.appendChild(input); inputRow.appendChild(driveBtn);
+          panel.appendChild(inputRow); panel.appendChild(unmarkBtn);
+        } else {
+          inputRow.appendChild(input); inputRow.appendChild(driveBtn);
+          panel.appendChild(inputRow);
+        }
+        card.appendChild(panel);
+      })(expDot);
+    }
+    grid.appendChild(card);
+  });
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  setStatus('status', 'loading', 'Saving...');
+  saveTimer = setTimeout(saveCurrentProfile, 800);
+}
+
+function saveCurrentProfile() {
+  var p = vp(); if (!p || !isEditable()) return;
+  apiPost({action:'saveProfile', id:viewingId, data:p}).then(function(r) {
+    if (r.error) { setStatus('status','error','Save failed'); return; }
+    setStatus('status','ok','Saved — synced with group');
+    showToast('Saved');
+  }).catch(function() { setStatus('status','error','Save failed'); });
+}
+
+function loadLeaderboard() {
+  setStatus('lb-status','loading','Loading leaderboard...');
+  apiGet({action:'getAll'}).then(function(r) {
+    if (r.error || r.profiles === undefined) { setStatus('lb-status','error','Failed to load'); return; }
+    profiles = r.profiles;
+    if (r.challenges) customChallenges = r.challenges;
+    renderLeaderboard();
+    setStatus('lb-status','ok','Live leaderboard');
+  }).catch(function() { setStatus('lb-status','error','Failed to load'); });
+}
+
+function renderLeaderboard() {
+  var list = document.getElementById('lb-list');
+  var entries = Object.keys(profiles).map(function(id) {
+    return {id:id, p:profiles[id], total:calcTotal(profiles[id])};
+  }).sort(function(a,b) { return b.total - a.total; });
+  list.innerHTML = '';
+  if (!entries.length) { list.innerHTML = '<div style="font-size:13px;color:var(--text2);text-align:center;padding:2rem 0;">No profiles yet.</div>'; return; }
+  var ranks = ['1st','2nd','3rd','4th','5th'];
+  entries.forEach(function(e, i) {
+    var isMe = e.id === currentId;
+    var row = document.createElement('div');
+    row.className = 'lb-row' + (isMe ? ' me' : '') + (i === 0 ? ' first' : '');
+    var rank = document.createElement('div'); rank.className = 'lb-rank'; rank.textContent = ranks[i] || (i+1)+'th';
+    var avatar = document.createElement('div'); avatar.className = 'lb-avatar';
+    avatar.style.background = e.p.color + '25'; avatar.style.color = e.p.color;
+    avatar.textContent = initials(e.p.name);
+    var info = document.createElement('div'); info.style.flex = '1';
+    var nameEl = document.createElement('div'); nameEl.className = 'lb-name';
+    nameEl.textContent = e.p.name + (isMe ? ' (you)' : '');
+    var subEl = document.createElement('div'); subEl.className = 'lb-sub';
+    subEl.textContent = (e.p.classes||0) + ' classes · ' + calcBonus(e.p) + ' bonus pts';
+    info.appendChild(nameEl); info.appendChild(subEl);
+    var pts = document.createElement('div'); pts.style.textAlign = 'right';
+    var ptsNum = document.createElement('div'); ptsNum.className = 'lb-pts'; ptsNum.textContent = e.total;
+    var ptsEnt = document.createElement('div'); ptsEnt.className = 'lb-entries';
+    ptsEnt.textContent = Math.floor(e.total/12) + ' entries';
+    pts.appendChild(ptsNum); pts.appendChild(ptsEnt);
+    row.appendChild(rank); row.appendChild(avatar); row.appendChild(info); row.appendChild(pts);
+    list.appendChild(row);
+  });
+}
+
+function resetCurrent() {
+  if (!isEditable()) return;
+  if (!confirm('Reset all your progress? This cannot be undone.')) return;
+  var p = vp();
+  p.classes=0; p.bonuses={}; p.customBonuses={}; p.notes={}; p.classNotes={}; p.earlySignup=0;
+  expandedClass=null; expandedBonuses={};
+  renderTracker(); saveCurrentProfile();
+}
+
+function init() {
+  setupPinInputs('pin');
+  setupPinInputs('new-pin');
+  renderAvatarPicker(AV_COLORS[0]);
+  apiGet({action:'getAll'}).then(function(r) {
+    if (r.profiles !== undefined) {
+      profiles = r.profiles;
+      if (r.challenges) customChallenges = r.challenges;
+      if (currentId && profiles[currentId]) {
+        viewingId = currentId;
+        if (unlockedIds.indexOf(currentId) === -1) unlockedIds.push(currentId);
+        sessionStorage.setItem(UNLOCKED_KEY, JSON.stringify(unlockedIds));
+        showMain(); return;
+      }
+    }
+    populateSwitcher();
+    showScreen('onboard');
+    document.getElementById('main-tabs').style.display = 'none';
+  }).catch(function() {
+    populateSwitcher();
+    showScreen('onboard');
+    document.getElementById('main-tabs').style.display = 'none';
+  });
+}
+
+init();
+</script>
+</body>
+</html>
