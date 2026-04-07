@@ -952,11 +952,6 @@ function renderEarlyBonus() {
     input.type = 'text'; input.className = 'proof-input';
     input.placeholder = editable ? 'Add a proof note...' : 'No note added';
     input.value = note; input.disabled = !editable;
-    var driveBtn = document.createElement('button');
-    driveBtn.className = 'drive-btn' + (note ? ' has-proof' : '');
-    driveBtn.textContent = note ? 'Proof added' : 'Upload proof';
-    driveBtn.disabled = !editable;
-    driveBtn.onclick = function() { if (editable) openDrive(); };
     if (editable) {
       input.addEventListener('change', function() {
         if (!p.notes) p.notes = {};
@@ -965,6 +960,18 @@ function renderEarlyBonus() {
         driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
         scheduleSave();
       });
+    }
+    inputRow.appendChild(input);
+    panel.appendChild(inputRow);
+    var driveBtn = document.createElement('button');
+    driveBtn.className = 'drive-btn' + (note ? ' has-proof' : '');
+    driveBtn.textContent = note ? 'Proof added' : 'Upload proof';
+    driveBtn.disabled = !editable;
+    driveBtn.onclick = function() { if (editable) openDrive(); };
+    var proofActions = document.createElement('div');
+    proofActions.className = 'proof-actions';
+    proofActions.appendChild(driveBtn);
+    if (editable) {
       var unmarkBtn = document.createElement('button');
       unmarkBtn.className = 'unmark-btn';
       unmarkBtn.textContent = 'Unmark this';
@@ -975,12 +982,9 @@ function renderEarlyBonus() {
         delete expandedBonuses['early'];
         renderEarlyBonus(); renderTracker(); scheduleSave();
       };
-      inputRow.appendChild(input); inputRow.appendChild(driveBtn);
-      panel.appendChild(inputRow); panel.appendChild(unmarkBtn);
-    } else {
-      inputRow.appendChild(input); inputRow.appendChild(driveBtn);
-      panel.appendChild(inputRow);
+      proofActions.appendChild(unmarkBtn);
     }
+    panel.appendChild(proofActions);
     card.appendChild(panel);
   }
   grid.appendChild(card);
@@ -1035,7 +1039,7 @@ function renderCustomChallenges() {
           var isFilled = idx < filled;
           var isCompleter = gs > 1 ? ((idx + 1) % gs === 0) : true;
           var dot = document.createElement('div');
-          dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter ? ' completer' : '') + (!editable ? ' readonly' : '');
+          dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter ? ' completer' : '') + (!editable ? ' readonly' : '') + (totalBubbles > 5 ? ' sized' : '');
           if (editable) {
             dot.onclick = function(e) {
               e.stopPropagation();
@@ -1094,29 +1098,14 @@ function renderCustomChallenges() {
             driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
             scheduleSave();
           });
-          var unmarkBtn = document.createElement('button');
-          unmarkBtn.className = 'unmark-btn';
-          unmarkBtn.textContent = 'Unmark this';
-          unmarkBtn.onclick = function() {
-            if (!confirm('Unmark this completion?')) return;
-            if (!p.customBonuses) p.customBonuses = {};
-            p.customBonuses[b.id] = (groupNum - 1) * gs;
-            if (p.notes) delete p.notes[noteKey];
-            delete expandedBonuses['c_'+b.id];
-            renderCustomChallenges(); renderTracker(); scheduleSave();
-          };
-          inputRow.appendChild(input); inputRow.appendChild(driveBtn);
-          panel.appendChild(inputRow); panel.appendChild(unmarkBtn);
-        } else {
-          inputRow.appendChild(input); inputRow.appendChild(driveBtn);
-          panel.appendChild(inputRow);
         }
-        card.appendChild(panel);
-      })(expDot);
-    }
-    grid.appendChild(card);
-  });
-}
+        inputRow.appendChild(input);
+        panel.appendChild(inputRow);
+        var proofActions = document.createElement('div');
+        proofActions.className = 'proof-actions';
+        proofActions.appendChild(driveBtn);
+        if (editable2) {
+          var unmarkBtn = document.createElement('button');
 
 function scheduleSave() {
   clearTimeout(saveTimer);
