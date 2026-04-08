@@ -109,7 +109,6 @@
   .proof-input[disabled] { opacity: 0.6; cursor: default; }
   .drive-btn { font-size: 11.5px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; white-space: nowrap; flex: 1; text-align: center; transition: background 0.12s; }
   .drive-btn:hover:not([disabled]) { background: var(--surface2); }
-
   .drive-btn[disabled] { opacity: 0.6; cursor: default; }
   .unmark-btn { font-size: 11.5px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(226,75,74,0.3); background: var(--red-bg); color: var(--red-text); cursor: pointer; white-space: nowrap; flex: 1; text-align: center; }
 
@@ -123,12 +122,12 @@
   .bonus-pts-label { font-size: 11px; color: var(--text3); margin-top: 3px; }
   .bonus-card.done .bonus-pts-label { color: var(--green); }
 
-    .bubbles-wrap { padding: 6px 12px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .bubbles-wrap { padding: 6px 12px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
   .bubble-pill { display: flex; align-items: center; gap: 5px; background: rgba(44,36,22,0.05); border-radius: 999px; padding: 5px 10px; border: 1px solid var(--border); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
   .bubble-pill:hover:not(.readonly) { border-color: var(--green-border); }
   .bubble-pill.done { background: var(--green-bg); border-color: var(--green-border); }
   .bubble-pill.readonly { cursor: default; }
-  .bubble { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border2); flex-shrink: 0; transition: background 0.12s, border-color 0.12s; background: transparent; pointer-events: none; }
+  .bubble { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border2); flex-shrink: 0; background: transparent; pointer-events: none; transition: background 0.12s, border-color 0.12s; }
   .bubble.filled { background: var(--green); border-color: var(--green); }
   .bubble.filled.completer { background: var(--green-dark); border-color: var(--green-dark); }
   .bubble-note-input { font-size: 11px; padding: 3px 7px; height: 26px; flex: 1; min-width: 80px; margin: 0; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; }
@@ -143,6 +142,7 @@
   .status-dot.loading { background: var(--gold); animation: pulse 1s infinite; }
   .status-dot.error { background: var(--red); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes loadpulse { 0%,100%{opacity:0.3;transform:scale(0.8)} 50%{opacity:1;transform:scale(1.1)} }
 
   .lb-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 8px; }
   .lb-row.me { border-color: var(--green-border); background: var(--green-bg); }
@@ -190,6 +190,17 @@
       <button class="btn btn-primary" onclick="submitPin()">Unlock</button>
     </div>
   </div>
+</div>
+
+<div id="screen-loading" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;background:#F5F0E8;gap:16px;">
+  <div style="font-family:'DM Serif Display',serif;font-size:24px;color:#2C2416;">Flow <span style="color:#BA7517;">Challenge</span></div>
+  <div style="display:flex;gap:6px;align-items:center;">
+    <div class="loader-dot" style="width:8px;height:8px;border-radius:50%;background:#1D9E75;animation:loadpulse 1.2s ease-in-out infinite;"></div>
+    <div class="loader-dot" style="width:8px;height:8px;border-radius:50%;background:#1D9E75;animation:loadpulse 1.2s ease-in-out 0.2s infinite;"></div>
+    <div class="loader-dot" style="width:8px;height:8px;border-radius:50%;background:#1D9E75;animation:loadpulse 1.2s ease-in-out 0.4s infinite;"></div>
+  </div>
+  <div id="loading-msg" style="font-size:13px;color:#7A6E5F;">Connecting...</div>
+  <button id="retry-btn" onclick="retryInit()" style="display:none;font-size:13px;font-family:'DM Sans',sans-serif;padding:8px 20px;border-radius:8px;border:1px solid rgba(44,36,22,0.22);background:#FDFAF5;color:#2C2416;cursor:pointer;">Try again</button>
 </div>
 
 <div class="app">
@@ -700,8 +711,8 @@ function renderClassGrid() {
         input.addEventListener('change', function() {
           if (!p.classNotes) p.classNotes = {};
           p.classNotes[idx] = input.value;
-          
-          
+          driveBtn.className = 'drive-btn' + (input.value ? '' : '');
+          driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
           scheduleSave();
         });
       }
@@ -710,7 +721,7 @@ function renderClassGrid() {
       if (editable2) {
         var unmarkBtn = document.createElement('button');
         unmarkBtn.className = 'unmark-btn';
-        unmarkBtn.textContent = 'Unmark bonus';
+        unmarkBtn.textContent = 'Unmark class ' + (idx + 1);
         unmarkBtn.onclick = function() {
           if (!confirm('Unmark Class ' + (idx+1) + '? This will also unmark later classes.')) return;
           p.classes = idx;
@@ -767,29 +778,26 @@ function renderBonusGroup(gridId, list) {
       var pillDone = (g + 1) * groupSize <= filled;
       var pill = document.createElement('div');
       pill.className = 'bubble-pill' + (pillDone ? ' done' : '') + (!editable ? ' readonly' : '');
-
       (function(groupIdx) {
         pill.onclick = function(e) {
           e.stopPropagation();
           if (!editable) return;
           var groupStart = groupIdx * groupSize;
-          var groupEnd = groupStart + groupSize - 1;
-          var groupFilled = Math.min(filled, groupEnd + 1) - groupStart;
+          var groupFilled = Math.min(filled, groupStart + groupSize) - groupStart;
           if (!p.bonuses) p.bonuses = {};
           if (groupFilled < groupSize) {
             p.bonuses[b.id] = groupStart + groupFilled + 1;
             if (groupStart + groupFilled + 1 === (groupIdx + 1) * groupSize) {
               expandedBonuses[b.id] = (groupIdx + 1) * groupSize - 1;
             }
+            renderBonusGroup(gridId, list); renderTracker(); scheduleSave();
           } else {
+            var groupEnd = (groupIdx + 1) * groupSize - 1;
             expandedBonuses[b.id] = expandedBonuses[b.id] === groupEnd ? -1 : groupEnd;
+            renderBonusGroup(gridId, list);
           }
-          renderBonusGroup(gridId, list);
-          renderTracker();
-          if (groupFilled < groupSize) scheduleSave();
         };
       })(g);
-
       for (var bi = 0; bi < groupSize; bi++) {
         var bubbleIdx = g * groupSize + bi;
         if (bubbleIdx >= totalBubbles) break;
@@ -798,7 +806,6 @@ function renderBonusGroup(gridId, list) {
         var dot = document.createElement('div');
         dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter ? ' completer' : '');
         pill.appendChild(dot);
-
         if (b.perBubbleNote && isFilled) {
           (function(idx) {
             var noteKey = b.id + '_bubble_' + idx;
@@ -857,8 +864,8 @@ function renderBonusGroup(gridId, list) {
             input.addEventListener('change', function() {
               if (!p.notes) p.notes = {};
               p.notes[noteKey] = input.value;
-              
-              
+              driveBtn.className = 'drive-btn' + (input.value ? '' : '');
+              driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
               scheduleSave();
             });
           }
@@ -868,7 +875,7 @@ function renderBonusGroup(gridId, list) {
           if (editable2) {
             var unmarkBtn = document.createElement('button');
             unmarkBtn.className = 'unmark-btn';
-            unmarkBtn.textContent = 'Unmark bonus';
+            unmarkBtn.textContent = groupSize > 1 ? 'Unmark set ' + groupNum : 'Unmark this';
             unmarkBtn.onclick = function() {
               if (!confirm('Unmark this completion?')) return;
               if (!p.bonuses) p.bonuses = {};
@@ -915,18 +922,18 @@ function renderEarlyBonus() {
 
   var bubblesWrap = document.createElement('div');
   bubblesWrap.className = 'bubbles-wrap';
-  var pill = document.createElement('div');
-  pill.className = 'bubble-pill' + (done ? ' done' : '') + (!editable ? ' readonly' : '');
+  var earlyPill = document.createElement('div');
+  earlyPill.className = 'bubble-pill' + (done ? ' done' : '') + (!editable ? ' readonly' : '');
   if (editable) {
-    pill.onclick = function() {
+    earlyPill.onclick = function() {
       if (!done) { p.earlySignup = 1; expandedBonuses['early'] = 0; renderEarlyBonus(); renderTracker(); scheduleSave(); }
       else { expandedBonuses['early'] = expandedBonuses['early'] === 0 ? -1 : 0; renderEarlyBonus(); }
     };
   }
-  var dot = document.createElement('div');
-  dot.className = 'bubble' + (done ? ' filled' : '');
-  pill.appendChild(dot);
-  bubblesWrap.appendChild(pill);
+  var earlyDot = document.createElement('div');
+  earlyDot.className = 'bubble' + (done ? ' filled' : '');
+  earlyPill.appendChild(earlyDot);
+  bubblesWrap.appendChild(earlyPill);
   card.appendChild(head);
   card.appendChild(bubblesWrap);
 
@@ -943,22 +950,20 @@ function renderEarlyBonus() {
     input.type = 'text'; input.className = 'proof-input';
     input.placeholder = editable ? 'Add a proof note...' : 'No note added';
     input.value = note; input.disabled = !editable;
-    if (editable) {
-      input.addEventListener('change', function() {
-        if (!p.notes) p.notes = {};
-        p.notes['early'] = input.value;
-        
-        
-        scheduleSave();
-      });
-    }
-    inputRow.appendChild(input);
-    panel.appendChild(inputRow);
     var driveBtn = document.createElement('button');
     driveBtn.className = 'drive-btn';
     driveBtn.textContent = 'Upload proof';
     driveBtn.disabled = !editable;
     driveBtn.onclick = function() { if (editable) openDrive(); };
+    if (editable) {
+      input.addEventListener('change', function() {
+        if (!p.notes) p.notes = {};
+        p.notes['early'] = input.value;
+        scheduleSave();
+      });
+    }
+    inputRow.appendChild(input);
+    panel.appendChild(inputRow);
     var proofActions = document.createElement('div');
     proofActions.className = 'proof-actions';
     proofActions.appendChild(driveBtn);
@@ -1021,11 +1026,11 @@ function renderCustomChallenges() {
     bubblesWrap.className = 'bubbles-wrap';
     var numGroups = Math.ceil(totalBubbles / gs);
     for (var g = 0; g < numGroups; g++) {
-      var pillDone = (g + 1) * gs <= filled;
-      var pill = document.createElement('div');
-      pill.className = 'bubble-pill' + (pillDone ? ' done' : '') + (!editable ? ' readonly' : '');
+      var pillDone2 = (g + 1) * gs <= filled;
+      var pill2 = document.createElement('div');
+      pill2.className = 'bubble-pill' + (pillDone2 ? ' done' : '') + (!editable ? ' readonly' : '');
       (function(groupIdx) {
-        pill.onclick = function(e) {
+        pill2.onclick = function(e) {
           e.stopPropagation();
           if (!editable) return;
           var groupStart = groupIdx * gs;
@@ -1036,24 +1041,24 @@ function renderCustomChallenges() {
             if (groupStart + groupFilled + 1 === (groupIdx + 1) * gs) {
               expandedBonuses['c_'+b.id] = (groupIdx + 1) * gs - 1;
             }
+            renderCustomChallenges(); renderTracker(); scheduleSave();
           } else {
             var groupEnd = (groupIdx + 1) * gs - 1;
             expandedBonuses['c_'+b.id] = expandedBonuses['c_'+b.id] === groupEnd ? -1 : groupEnd;
+            renderCustomChallenges();
           }
-          renderCustomChallenges(); renderTracker();
-          if (groupFilled < gs) scheduleSave();
         };
       })(g);
       for (var bi = 0; bi < gs; bi++) {
-        var bubbleIdx = g * gs + bi;
-        if (bubbleIdx >= totalBubbles) break;
-        var isFilled2 = bubbleIdx < filled;
+        var bubbleIdx2 = g * gs + bi;
+        if (bubbleIdx2 >= totalBubbles) break;
+        var isFilled2 = bubbleIdx2 < filled;
         var isCompleter2 = bi === gs - 1 && gs > 1;
         var dot2 = document.createElement('div');
         dot2.className = 'bubble' + (isFilled2 ? ' filled' : '') + (isFilled2 && isCompleter2 ? ' completer' : '');
-        pill.appendChild(dot2);
+        pill2.appendChild(dot2);
       }
-      bubblesWrap.appendChild(pill);
+      bubblesWrap.appendChild(pill2);
     }
     card.appendChild(bubblesWrap);
 
@@ -1076,22 +1081,20 @@ function renderCustomChallenges() {
         input.type = 'text'; input.className = 'proof-input';
         input.placeholder = b.notePrompt || 'Add a proof note...';
         input.value = existingNote; input.disabled = !editable2;
-        if (editable2) {
-          input.addEventListener('change', function() {
-            if (!p.notes) p.notes = {};
-            p.notes[noteKey] = input.value;
-            
-            
-            scheduleSave();
-          });
-        }
-        inputRow.appendChild(input);
-        panel.appendChild(inputRow);
         var driveBtn = document.createElement('button');
         driveBtn.className = 'drive-btn';
         driveBtn.textContent = 'Upload proof';
         driveBtn.disabled = !editable2;
         driveBtn.onclick = function() { if (editable2) openDrive(); };
+        if (editable2) {
+          input.addEventListener('change', function() {
+            if (!p.notes) p.notes = {};
+            p.notes[noteKey] = input.value;
+            scheduleSave();
+          });
+        }
+        inputRow.appendChild(input);
+        panel.appendChild(inputRow);
         var proofActions = document.createElement('div');
         proofActions.className = 'proof-actions';
         proofActions.appendChild(driveBtn);
@@ -1116,6 +1119,7 @@ function renderCustomChallenges() {
     grid.appendChild(card);
   });
 }
+
 function scheduleSave() {
   clearTimeout(saveTimer);
   setStatus('status', 'loading', 'Saving...');
@@ -1183,29 +1187,61 @@ function resetCurrent() {
   renderTracker(); saveCurrentProfile();
 }
 
-function init() {
-  setupPinInputs('pin');
-  setupPinInputs('new-pin');
-  renderAvatarPicker(AV_COLORS[0]);
-  apiGet({action:'getAll'}).then(function(r) {
+function showLoading(msg) {
+  document.getElementById('screen-loading').style.display = 'flex';
+  document.getElementById('loading-msg').textContent = msg || 'Connecting...';
+  document.getElementById('retry-btn').style.display = 'none';
+  document.querySelector('.app').style.display = 'none';
+}
+
+function hideLoading() {
+  document.getElementById('screen-loading').style.display = 'none';
+  document.querySelector('.app').style.display = 'block';
+}
+
+function showRetry(msg) {
+  document.getElementById('screen-loading').style.display = 'flex';
+  document.getElementById('loading-msg').textContent = msg || 'Could not connect.';
+  document.getElementById('retry-btn').style.display = 'block';
+  document.querySelector('.app').style.display = 'none';
+}
+
+function retryInit() {
+  document.getElementById('retry-btn').style.display = 'none';
+  document.getElementById('loading-msg').textContent = 'Trying again...';
+  loadData();
+}
+
+function loadData() {
+  return apiGet({action:'getAll'}).then(function(r) {
     if (r.profiles !== undefined) {
       profiles = r.profiles;
       if (r.challenges) customChallenges = r.challenges;
+      hideLoading();
       if (currentId && profiles[currentId]) {
         viewingId = currentId;
         if (unlockedIds.indexOf(currentId) === -1) unlockedIds.push(currentId);
         sessionStorage.setItem(UNLOCKED_KEY, JSON.stringify(unlockedIds));
-        showMain(); return;
+        showMain();
+      } else {
+        populateSwitcher();
+        showScreen('onboard');
+        document.getElementById('main-tabs').style.display = 'none';
       }
+    } else {
+      showRetry('Something went wrong. Tap to retry.');
     }
-    populateSwitcher();
-    showScreen('onboard');
-    document.getElementById('main-tabs').style.display = 'none';
   }).catch(function() {
-    populateSwitcher();
-    showScreen('onboard');
-    document.getElementById('main-tabs').style.display = 'none';
+    showRetry('Could not connect. Check your connection and tap to retry.');
   });
+}
+
+function init() {
+  setupPinInputs('pin');
+  setupPinInputs('new-pin');
+  renderAvatarPicker(AV_COLORS[0]);
+  showLoading('Loading your profile...');
+  loadData();
 }
 
 init();
