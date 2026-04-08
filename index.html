@@ -91,8 +91,6 @@
   .bubble { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border2); flex-shrink: 0; background: transparent; pointer-events: none; }
   .bubble.filled { background: var(--green); border-color: var(--green); }
   .bubble.filled.completer { background: var(--green-dark); border-color: var(--green-dark); }
-  .bubble-note-input { font-size: 11px; padding: 3px 7px; height: 26px; flex: 1; min-width: 80px; margin: 0; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; }
-  .bubble-note-input:focus { border-color: var(--green-border); }
   .bonus-proof-panel { border-top: 1px solid var(--border); padding: 10px 14px; background: var(--green-bg); }
   .bonus-card.done .bonus-proof-panel { border-top-color: var(--green-border); }
   .proof-panel-label { font-size: 11px; font-weight: 500; color: var(--green-text); margin-bottom: 8px; }
@@ -279,7 +277,7 @@ var B1 = [
 var B2 = [
   {id:'wkday_morn', name:'2 weekday morning classes', max:6, groupSize:2, pts:2, notePrompt:'e.g. Mon & Wed morning'},
   {id:'pilates_chair', name:'2 Pilates Chair Sculpt', max:6, groupSize:2, pts:2, notePrompt:'e.g. class dates'},
-  {id:'diff_instr', name:'4 different instructors', max:12, groupSize:4, pts:2, notePrompt:'Instructor name', perBubbleNote:true},
+  {id:'diff_instr', name:'4 different instructors', max:12, groupSize:4, pts:2, notePrompt:'Instructor name'},
   {id:'megastrength', name:'2 MegaStrength classes', max:6, groupSize:2, pts:2, notePrompt:'e.g. class dates'},
   {id:'drunk_elephant', name:'Drunk Elephant workshop', max:1, groupSize:1, pts:2, notePrompt:'e.g. date attended'}
 ];
@@ -833,34 +831,13 @@ function renderBonusGroup(gridId, list) {
         dot.className = 'bubble' + (isFilled ? ' filled' : '') + (isFilled && isCompleter ? ' completer' : '');
         pill.appendChild(dot);
 
-        if (b.perBubbleNote && isFilled) {
-          (function(idx) {
-            var noteKey = b.id + '_bubble_' + idx;
-            var bNote = (p.notes && p.notes[noteKey]) || '';
-            var bInput = document.createElement('input');
-            bInput.className = 'bubble-note-input';
-            bInput.type = 'text';
-            bInput.placeholder = b.notePrompt || 'Note...';
-            bInput.value = bNote;
-            bInput.disabled = !editable;
-            bInput.onclick = function(e) { e.stopPropagation(); };
-            if (editable) {
-              bInput.addEventListener('change', function() {
-                if (!p.notes) p.notes = {};
-                p.notes[noteKey] = bInput.value;
-                scheduleSave();
-              });
-            }
-            pill.appendChild(bInput);
-          })(bubbleIdx);
-        }
       }
       bubblesWrap.appendChild(pill);
     }
     card.appendChild(bubblesWrap);
 
     var expDot = expandedBonuses[b.id];
-    if (expDot !== undefined && expDot >= 0 && expDot < filled && !b.perBubbleNote) {
+    if (expDot !== undefined && expDot >= 0 && expDot < filled) {
       var isCompleterExp = groupSize > 1 ? ((expDot + 1) % groupSize === 0) : true;
       if (isCompleterExp) {
         (function(dotIdx) {
