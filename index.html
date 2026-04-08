@@ -297,7 +297,7 @@
 
   <div class="credit">
     Made by <strong>Tiffany Wen</strong><br>
-    <span style="font-size:11px;">because Flow was doing manual insanity and someone had to fix it.</span>
+    <span style="font-size:11px;">because Flow was doing manual insanity and someone had to fix it</span>
   </div>
 </div>
 
@@ -718,7 +718,7 @@ function renderClassGrid() {
           expandedClass = idx > 0 ? idx - 1 : null;
           renderTracker(); scheduleSave();
         };
-        panel.appendChild(unmarkBtn);
+        proofActions.appendChild(unmarkBtn);
       }
       container.appendChild(panel);
     })(expandedClass);
@@ -878,7 +878,7 @@ function renderBonusGroup(gridId, list) {
               renderBonusGroup(gridId, list);
               renderTracker(); scheduleSave();
             };
-            panel.appendChild(unmarkBtn);
+            proofActions.appendChild(unmarkBtn);
           }
           card.appendChild(panel);
         })(expDot);
