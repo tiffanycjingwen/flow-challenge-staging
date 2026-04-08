@@ -716,12 +716,15 @@ function renderClassGrid() {
           scheduleSave();
         });
       }
-      inputRow.appendChild(input); inputRow.appendChild(driveBtn);
+      inputRow.appendChild(input);
       panel.appendChild(inputRow);
+      var proofActions = document.createElement('div');
+      proofActions.className = 'proof-actions';
+      proofActions.appendChild(driveBtn);
       if (editable2) {
         var unmarkBtn = document.createElement('button');
         unmarkBtn.className = 'unmark-btn';
-        unmarkBtn.textContent = 'Unmark class ' + (idx + 1);
+        unmarkBtn.textContent = 'Unmark bonus';
         unmarkBtn.onclick = function() {
           if (!confirm('Unmark Class ' + (idx+1) + '? This will also unmark later classes.')) return;
           p.classes = idx;
@@ -731,6 +734,7 @@ function renderClassGrid() {
         };
         proofActions.appendChild(unmarkBtn);
       }
+      panel.appendChild(proofActions);
       container.appendChild(panel);
     })(expandedClass);
   }
@@ -869,13 +873,15 @@ function renderBonusGroup(gridId, list) {
               scheduleSave();
             });
           }
-          inputRow.appendChild(input); inputRow.appendChild(driveBtn);
+          inputRow.appendChild(input);
           panel.appendChild(inputRow);
-
+          var proofActions = document.createElement('div');
+          proofActions.className = 'proof-actions';
+          proofActions.appendChild(driveBtn);
           if (editable2) {
             var unmarkBtn = document.createElement('button');
             unmarkBtn.className = 'unmark-btn';
-            unmarkBtn.textContent = groupSize > 1 ? 'Unmark set ' + groupNum : 'Unmark this';
+            unmarkBtn.textContent = 'Unmark bonus';
             unmarkBtn.onclick = function() {
               if (!confirm('Unmark this completion?')) return;
               if (!p.bonuses) p.bonuses = {};
