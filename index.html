@@ -690,57 +690,32 @@ function renderClassGrid() {
     (function(idx) {
       var note = (p.classNotes && p.classNotes[idx]) || '';
       var editable2 = isEditable();
-      var panel = document.createElement('div');
-      panel.className = 'class-proof-panel open';
-      var label = document.createElement('div');
-      label.className = 'proof-panel-label';
-      label.textContent = 'Class ' + (idx + 1) + ' — proof';
-      panel.appendChild(label);
-      var inputRow = document.createElement('div');
-      inputRow.className = 'proof-input-row';
-      var input = document.createElement('input');
-      input.type = 'text'; input.className = 'proof-input';
-      input.placeholder = editable2 ? 'Add a note (e.g. reformer class, 7 Apr)' : 'No note added';
-      input.value = note; input.disabled = !editable2;
-      var driveBtn = document.createElement('button');
-      driveBtn.className = 'drive-btn';
-      driveBtn.textContent = 'Upload proof';
-      driveBtn.disabled = !editable2;
-      driveBtn.onclick = function() { if (editable2) openDrive(); };
-      if (editable2) {
-        input.addEventListener('change', function() {
+      var panel = makeProofPanel(
+        'Class ' + (idx + 1) + ' — proof',
+        note,
+        'Add a note (e.g. reformer class, 7 Apr)',
+        editable2,
+        function(val) {
           if (!p.classNotes) p.classNotes = {};
-          p.classNotes[idx] = input.value;
-          driveBtn.className = 'drive-btn' + (input.value ? '' : '');
-          driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
+          p.classNotes[idx] = val;
           scheduleSave();
-        });
-      }
-      inputRow.appendChild(input);
-      panel.appendChild(inputRow);
-      var proofActions = document.createElement('div');
-      proofActions.className = 'proof-actions';
-      proofActions.appendChild(driveBtn);
-      if (editable2) {
-        var unmarkBtn = document.createElement('button');
-        unmarkBtn.className = 'unmark-btn';
-        unmarkBtn.textContent = 'Unmark bonus';
-        unmarkBtn.onclick = function() {
+        },
+        openDrive,
+        editable2 ? function() {
           if (!confirm('Unmark Class ' + (idx+1) + '? This will also unmark later classes.')) return;
           p.classes = idx;
           if (p.classNotes) { for (var k = idx; k < MAX_CLASSES; k++) delete p.classNotes[k]; }
           expandedClass = idx > 0 ? idx - 1 : null;
           renderTracker(); scheduleSave();
-        };
-        proofActions.appendChild(unmarkBtn);
-      }
-      panel.appendChild(proofActions);
+        } : null
+      );
+      panel.className = 'class-proof-panel open';
       container.appendChild(panel);
     })(expandedClass);
   }
 }
 
-function renderBonusGroup(gridId, list) {
+(gridId, list) {
   var p = vp();
   var editable = isEditable();
   var grid = document.getElementById(gridId);
@@ -845,44 +820,19 @@ function renderBonusGroup(gridId, list) {
           var noteKey = b.id + '_group_' + groupNum;
           var existingNote = (p.notes && p.notes[noteKey]) || '';
           var editable2 = isEditable();
-
-          var panel = document.createElement('div');
-          panel.className = 'bonus-proof-panel open';
-          var panelLabel = document.createElement('div');
-          panelLabel.className = 'proof-panel-label';
-          panelLabel.textContent = groupSize > 1 ? b.name + ' — set ' + groupNum + ' proof' : b.name + ' #' + groupNum + ' — proof';
-          panel.appendChild(panelLabel);
-
-          var inputRow = document.createElement('div');
-          inputRow.className = 'proof-input-row';
-          var input = document.createElement('input');
-          input.type = 'text'; input.className = 'proof-input';
-          input.placeholder = b.notePrompt || 'Add a proof note...';
-          input.value = existingNote; input.disabled = !editable2;
-          var driveBtn = document.createElement('button');
-          driveBtn.className = 'drive-btn';
-          driveBtn.textContent = 'Upload proof';
-          driveBtn.disabled = !editable2;
-          driveBtn.onclick = function() { if (editable2) openDrive(); };
-          if (editable2) {
-            input.addEventListener('change', function() {
+          var panelLabel = groupSize > 1 ? b.name + ' — set ' + groupNum + ' proof' : b.name + ' #' + groupNum + ' — proof';
+          var panel = makeProofPanel(
+            panelLabel,
+            existingNote,
+            b.notePrompt || 'Add a proof note...',
+            editable2,
+            function(val) {
               if (!p.notes) p.notes = {};
-              p.notes[noteKey] = input.value;
-              driveBtn.className = 'drive-btn' + (input.value ? '' : '');
-              driveBtn.textContent = input.value ? 'Proof added' : 'Upload proof';
+              p.notes[noteKey] = val;
               scheduleSave();
-            });
-          }
-          inputRow.appendChild(input);
-          panel.appendChild(inputRow);
-          var proofActions = document.createElement('div');
-          proofActions.className = 'proof-actions';
-          proofActions.appendChild(driveBtn);
-          if (editable2) {
-            var unmarkBtn = document.createElement('button');
-            unmarkBtn.className = 'unmark-btn';
-            unmarkBtn.textContent = 'Unmark bonus';
-            unmarkBtn.onclick = function() {
+            },
+            openDrive,
+            editable2 ? function() {
               if (!confirm('Unmark this completion?')) return;
               if (!p.bonuses) p.bonuses = {};
               p.bonuses[b.id] = (groupNum - 1) * groupSize;
@@ -890,10 +840,11 @@ function renderBonusGroup(gridId, list) {
               delete expandedBonuses[b.id];
               renderBonusGroup(gridId, list);
               renderTracker(); scheduleSave();
-            };
-            proofActions.appendChild(unmarkBtn);
-          }
+            } : null
+          );
+          panel.className = 'bonus-proof-panel open';
           card.appendChild(panel);
+        })(expDot);
         })(expDot);
       }
     }
@@ -944,49 +895,27 @@ function renderEarlyBonus() {
   card.appendChild(bubblesWrap);
 
   if (isExp) {
-    var panel = document.createElement('div');
-    panel.className = 'bonus-proof-panel open';
-    var panelLabel = document.createElement('div');
-    panelLabel.className = 'proof-panel-label';
-    panelLabel.textContent = 'First 50 signups — proof';
-    panel.appendChild(panelLabel);
-    var inputRow = document.createElement('div');
-    inputRow.className = 'proof-input-row';
-    var input = document.createElement('input');
-    input.type = 'text'; input.className = 'proof-input';
-    input.placeholder = editable ? 'Add a proof note...' : 'No note added';
-    input.value = note; input.disabled = !editable;
-    var driveBtn = document.createElement('button');
-    driveBtn.className = 'drive-btn';
-    driveBtn.textContent = 'Upload proof';
-    driveBtn.disabled = !editable;
-    driveBtn.onclick = function() { if (editable) openDrive(); };
-    if (editable) {
-      input.addEventListener('change', function() {
+    var editable2 = isEditable();
+    var panel = makeProofPanel(
+      'First 50 signups — proof',
+      note,
+      'Add a proof note...',
+      editable2,
+      function(val) {
         if (!p.notes) p.notes = {};
-        p.notes['early'] = input.value;
+        p.notes['early'] = val;
         scheduleSave();
-      });
-    }
-    inputRow.appendChild(input);
-    panel.appendChild(inputRow);
-    var proofActions = document.createElement('div');
-    proofActions.className = 'proof-actions';
-    proofActions.appendChild(driveBtn);
-    if (editable) {
-      var unmarkBtn = document.createElement('button');
-      unmarkBtn.className = 'unmark-btn';
-      unmarkBtn.textContent = 'Unmark bonus';
-      unmarkBtn.onclick = function() {
+      },
+      openDrive,
+      editable2 ? function() {
         if (!confirm('Unmark early signup bonus?')) return;
         p.earlySignup = 0;
         if (p.notes) delete p.notes['early'];
         delete expandedBonuses['early'];
         renderEarlyBonus(); renderTracker(); scheduleSave();
-      };
-      proofActions.appendChild(unmarkBtn);
-    }
-    panel.appendChild(proofActions);
+      } : null
+    );
+    panel.className = 'bonus-proof-panel open';
     card.appendChild(panel);
   }
   grid.appendChild(card);
@@ -1075,55 +1004,69 @@ function renderCustomChallenges() {
         var noteKey = 'custom_' + b.id + '_' + groupNum;
         var existingNote = (p.notes && p.notes[noteKey]) || '';
         var editable2 = isEditable();
-        var panel = document.createElement('div');
-        panel.className = 'bonus-proof-panel open';
-        var panelLabel = document.createElement('div');
-        panelLabel.className = 'proof-panel-label';
-        panelLabel.textContent = b.name + (gs > 1 ? ' — set ' + groupNum + ' proof' : ' #' + groupNum + ' — proof');
-        panel.appendChild(panelLabel);
-        var inputRow = document.createElement('div');
-        inputRow.className = 'proof-input-row';
-        var input = document.createElement('input');
-        input.type = 'text'; input.className = 'proof-input';
-        input.placeholder = b.notePrompt || 'Add a proof note...';
-        input.value = existingNote; input.disabled = !editable2;
-        var driveBtn = document.createElement('button');
-        driveBtn.className = 'drive-btn';
-        driveBtn.textContent = 'Upload proof';
-        driveBtn.disabled = !editable2;
-        driveBtn.onclick = function() { if (editable2) openDrive(); };
-        if (editable2) {
-          input.addEventListener('change', function() {
+        var panelLabel = b.name + (gs > 1 ? ' — set ' + groupNum + ' proof' : ' #' + groupNum + ' — proof');
+        var panel = makeProofPanel(
+          panelLabel,
+          existingNote,
+          b.notePrompt || 'Add a proof note...',
+          editable2,
+          function(val) {
             if (!p.notes) p.notes = {};
-            p.notes[noteKey] = input.value;
+            p.notes[noteKey] = val;
             scheduleSave();
-          });
-        }
-        inputRow.appendChild(input);
-        panel.appendChild(inputRow);
-        var proofActions = document.createElement('div');
-        proofActions.className = 'proof-actions';
-        proofActions.appendChild(driveBtn);
-        if (editable2) {
-          var unmarkBtn = document.createElement('button');
-          unmarkBtn.className = 'unmark-btn';
-          unmarkBtn.textContent = 'Unmark bonus';
-          unmarkBtn.onclick = function() {
+          },
+          openDrive,
+          editable2 ? function() {
             if (!confirm('Unmark this completion?')) return;
             if (!p.customBonuses) p.customBonuses = {};
             p.customBonuses[b.id] = (groupNum - 1) * gs;
             if (p.notes) delete p.notes[noteKey];
             delete expandedBonuses['c_'+b.id];
             renderCustomChallenges(); renderTracker(); scheduleSave();
-          };
-          proofActions.appendChild(unmarkBtn);
-        }
-        panel.appendChild(proofActions);
+          } : null
+        );
+        panel.className = 'bonus-proof-panel open';
         card.appendChild(panel);
+      })(expDot);
       })(expDot);
     }
     grid.appendChild(card);
   });
+}
+
+function makeProofPanel(labelText, noteVal, notePlaceholder, editable, onNoteChange, onDrive, onUnmark) {
+  var panel = document.createElement('div');
+  panel.className = 'bonus-proof-panel open';
+  var label = document.createElement('div');
+  label.className = 'proof-panel-label';
+  label.textContent = labelText;
+  panel.appendChild(label);
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'proof-input';
+  input.placeholder = editable ? (notePlaceholder || 'Add a proof note...') : 'No note added';
+  input.value = noteVal || '';
+  input.disabled = !editable;
+  if (editable && onNoteChange) {
+    input.addEventListener('change', function() { onNoteChange(input.value); });
+  }
+  panel.appendChild(input);
+  var actions = document.createElement('div');
+  actions.className = 'proof-actions';
+  var driveBtn = document.createElement('button');
+  driveBtn.className = 'drive-btn';
+  driveBtn.textContent = 'Upload proof';
+  driveBtn.onclick = function() { openDrive(); };
+  actions.appendChild(driveBtn);
+  if (editable && onUnmark) {
+    var unmarkBtn = document.createElement('button');
+    unmarkBtn.className = 'unmark-btn';
+    unmarkBtn.textContent = 'Unmark bonus';
+    unmarkBtn.onclick = onUnmark;
+    actions.appendChild(unmarkBtn);
+  }
+  panel.appendChild(actions);
+  return panel;
 }
 
 function scheduleSave() {
