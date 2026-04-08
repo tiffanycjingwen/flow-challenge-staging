@@ -354,6 +354,42 @@ var expandedBonuses = {};
 var pinCallback = null;
 var viewingId = '';
 
+function makeProofPanel(labelText, noteVal, notePlaceholder, editable, onNoteChange, onDrive, onUnmark) {
+  var panel = document.createElement('div');
+  panel.className = 'bonus-proof-panel open';
+  var label = document.createElement('div');
+  label.className = 'proof-panel-label';
+  label.textContent = labelText;
+  panel.appendChild(label);
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'proof-input';
+  input.placeholder = editable ? (notePlaceholder || 'Add a proof note...') : 'No note added';
+  input.value = noteVal || '';
+  input.disabled = !editable;
+  if (editable && onNoteChange) {
+    input.addEventListener('change', function() { onNoteChange(input.value); });
+  }
+  panel.appendChild(input);
+  var actions = document.createElement('div');
+  actions.className = 'proof-actions';
+  var driveBtn = document.createElement('button');
+  driveBtn.className = 'drive-btn';
+  driveBtn.textContent = 'Upload proof';
+  driveBtn.onclick = function() { openDrive(); };
+  actions.appendChild(driveBtn);
+  if (editable && onUnmark) {
+    var unmarkBtn = document.createElement('button');
+    unmarkBtn.className = 'unmark-btn';
+    unmarkBtn.textContent = 'Unmark bonus';
+    unmarkBtn.onclick = onUnmark;
+    actions.appendChild(unmarkBtn);
+  }
+  panel.appendChild(actions);
+  return panel;
+}
+
+
 function openDrive() { window.open(DRIVE_URL, '_blank'); }
 
 function hashPin(pin) {
@@ -1034,40 +1070,6 @@ function renderCustomChallenges() {
   });
 }
 
-function makeProofPanel(labelText, noteVal, notePlaceholder, editable, onNoteChange, onDrive, onUnmark) {
-  var panel = document.createElement('div');
-  panel.className = 'bonus-proof-panel open';
-  var label = document.createElement('div');
-  label.className = 'proof-panel-label';
-  label.textContent = labelText;
-  panel.appendChild(label);
-  var input = document.createElement('input');
-  input.type = 'text';
-  input.className = 'proof-input';
-  input.placeholder = editable ? (notePlaceholder || 'Add a proof note...') : 'No note added';
-  input.value = noteVal || '';
-  input.disabled = !editable;
-  if (editable && onNoteChange) {
-    input.addEventListener('change', function() { onNoteChange(input.value); });
-  }
-  panel.appendChild(input);
-  var actions = document.createElement('div');
-  actions.className = 'proof-actions';
-  var driveBtn = document.createElement('button');
-  driveBtn.className = 'drive-btn';
-  driveBtn.textContent = 'Upload proof';
-  driveBtn.onclick = function() { openDrive(); };
-  actions.appendChild(driveBtn);
-  if (editable && onUnmark) {
-    var unmarkBtn = document.createElement('button');
-    unmarkBtn.className = 'unmark-btn';
-    unmarkBtn.textContent = 'Unmark bonus';
-    unmarkBtn.onclick = onUnmark;
-    actions.appendChild(unmarkBtn);
-  }
-  panel.appendChild(actions);
-  return panel;
-}
 
 function scheduleSave() {
   clearTimeout(saveTimer);
