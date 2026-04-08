@@ -111,7 +111,7 @@
   .drive-btn:hover:not([disabled]) { background: var(--surface2); }
 
   .drive-btn[disabled] { opacity: 0.6; cursor: default; }
-  .unmark-btn { font-size: 11.5px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; white-space: nowrap; flex: 1; text-align: center; }
+  .unmark-btn { font-size: 11.5px; font-weight: 500; font-family: 'DM Sans', sans-serif; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(226,75,74,0.3); background: var(--red-bg); color: var(--red-text); cursor: pointer; white-space: nowrap; flex: 1; text-align: center; }
 
   .bonus-list { display: flex; flex-direction: column; gap: 8px; }
   .bonus-card { background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); overflow: hidden; }
@@ -297,7 +297,7 @@
 
   <div class="credit">
     Made by <strong>Tiffany Wen</strong><br>
-    <span style="font-size:11px;">because Flow was doing manual insanity and someone had to fix it</span>
+    <span style="font-size:11px;">because Flow was doing manual insanity and someone had to fix it.</span>
   </div>
 </div>
 
@@ -710,7 +710,7 @@ function renderClassGrid() {
       if (editable2) {
         var unmarkBtn = document.createElement('button');
         unmarkBtn.className = 'unmark-btn';
-        unmarkBtn.textContent = 'Unmark class ' + (idx + 1);
+        unmarkBtn.textContent = 'Unmark bonus';
         unmarkBtn.onclick = function() {
           if (!confirm('Unmark Class ' + (idx+1) + '? This will also unmark later classes.')) return;
           p.classes = idx;
@@ -868,7 +868,7 @@ function renderBonusGroup(gridId, list) {
           if (editable2) {
             var unmarkBtn = document.createElement('button');
             unmarkBtn.className = 'unmark-btn';
-            unmarkBtn.textContent = groupSize > 1 ? 'Unmark set ' + groupNum : 'Unmark this';
+            unmarkBtn.textContent = 'Unmark bonus';
             unmarkBtn.onclick = function() {
               if (!confirm('Unmark this completion?')) return;
               if (!p.bonuses) p.bonuses = {};
@@ -965,7 +965,7 @@ function renderEarlyBonus() {
     if (editable) {
       var unmarkBtn = document.createElement('button');
       unmarkBtn.className = 'unmark-btn';
-      unmarkBtn.textContent = 'Unmark this';
+      unmarkBtn.textContent = 'Unmark bonus';
       unmarkBtn.onclick = function() {
         if (!confirm('Unmark early signup bonus?')) return;
         p.earlySignup = 0;
@@ -1098,7 +1098,7 @@ function renderCustomChallenges() {
         if (editable2) {
           var unmarkBtn = document.createElement('button');
           unmarkBtn.className = 'unmark-btn';
-          unmarkBtn.textContent = 'Unmark this';
+          unmarkBtn.textContent = 'Unmark bonus';
           unmarkBtn.onclick = function() {
             if (!confirm('Unmark this completion?')) return;
             if (!p.customBonuses) p.customBonuses = {};
